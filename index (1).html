@@ -1,0 +1,2746 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>반도체 실험실 - 드리프트·디퓨전·평형·에너지 밴드·전파 정류·평활·정전압·PN 다이오드 심화</title>
+<style>
+body{margin:0;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#0f172a;color:#e2e8f0}
+header{padding:14px 20px;background:#1e293b;font-size:20px;font-weight:bold}
+header small{font-size:13px;color:#94a3b8;font-weight:normal;margin-left:8px}
+.tabs{display:flex;gap:6px;padding:10px 20px;flex-wrap:wrap}
+.tabs button{padding:8px 16px;border:0;border-radius:8px;background:#334155;color:#fff;cursor:pointer;font-size:15px}
+.tabs button.on{background:#3b82f6}
+.wrap{display:flex;gap:16px;padding:0 20px 20px;flex-wrap:wrap}
+canvas{background:#111827;border-radius:10px;border:1px solid #334155;display:block;max-width:100%}
+.panel{flex:1;min-width:300px;max-width:520px;background:#1e293b;border-radius:10px;padding:14px}
+label{display:block;margin-top:10px;font-size:14px}
+input[type=range]{width:100%}
+select{margin-top:4px;width:100%;padding:5px;border-radius:6px;background:#0f172a;color:#e2e8f0;border:1px solid #475569}
+.btn{margin-top:10px;padding:7px 12px;border:0;border-radius:6px;background:#10b981;color:#fff;cursor:pointer}
+.box{background:#0f172a;padding:10px;border-radius:8px;margin-top:12px;font-size:14px;line-height:1.7}
+.eq{font-family:Consolas,monospace}
+.exp{font-size:14px;line-height:1.65;color:#cbd5e1;margin-top:10px}
+.note{font-size:13px;line-height:1.6;color:#fcd34d;background:#3f2d0c;border-radius:8px;padding:8px 10px;margin-top:10px}
+.meas{font-family:Consolas,monospace;font-size:13px}
+.v{color:#fbbf24;font-weight:bold}
+.ro{color:#a5b4fc;font-size:13px}
+.e{color:#60a5fa}.h{color:#f87171}
+
+/* ---------- 직관형 탭 ④·⑥ + 브리지 전파 정류·평활 탭 ⑤ ---------- */
+.choice-group{margin-top:12px}
+.choice-title{font-size:13px;color:#94a3b8;margin-bottom:6px}
+.choice-row{display:flex;gap:7px;flex-wrap:wrap}
+.choice-btn{flex:1;min-width:72px;padding:9px 10px;border:1px solid #475569;border-radius:8px;background:#334155;color:#e2e8f0;font-weight:bold;cursor:pointer}
+.choice-btn.active{background:#2563eb;border-color:#60a5fa;color:#fff;box-shadow:0 0 0 1px #60a5fa inset}
+.detail-btn{width:100%;margin-top:12px;padding:9px 12px;border:1px solid #475569;border-radius:8px;background:#334155;color:#e2e8f0;cursor:pointer}
+#semiDetails{display:none;margin-top:10px;font-size:13px;line-height:1.75}
+#semiDetails b{color:#fbbf24}
+.hidden-state{display:none!important}
+#meas.semi-status{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.55;border-left:4px solid #10b981}
+#note.semi-note{font-size:12px;color:#fcd34d}
+
+/* ⑥ PN 다이오드 전류 표시 */
+#meas.semi-status .diode-current-card{margin:0 0 10px;padding:11px 13px;border:1px solid #ead8bd;border-radius:10px;background:#fffaf3;color:#403c36;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+.diode-current-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.diode-current-title{font-size:13px;font-weight:800;color:#514b44}
+.diode-current-value{font-size:18px;font-weight:900;color:#252f3d;font-variant-numeric:tabular-nums}
+.diode-current-direction{margin-top:4px;font-size:12px;color:#625b51}
+.diode-current-track{height:10px;margin-top:8px;border-radius:99px;background:#e9e3d9;overflow:hidden}
+.diode-current-fill{height:100%;min-width:0;border-radius:99px;transition:width .12s linear}
+.diode-current-scale{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:10px;color:#8a8175}
+.diode-current-foot{margin-top:7px;font-size:11px;line-height:1.5;color:#756e64}
+.diode-state-text{font-size:13px;line-height:1.6}
+.diode-current-caveat{margin-top:7px;padding-top:7px;border-top:1px solid #e9dfd0;font-size:11px;line-height:1.5;color:#756e64}
+/* 입자 수 조절: 작은 화면에서도 두 입력을 나란히 또는 세로로 표시 */
+.particle-panel{margin:10px 0 8px;padding:10px;background:#0f172a;border:1px solid #334155;border-radius:8px}
+.particle-title{font-size:13px;font-weight:bold;color:#e2e8f0;margin-bottom:7px}
+.particle-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.particle-fields label{margin:0;min-width:0;font-size:13px}
+.particle-fields input[type=number]{box-sizing:border-box;width:100%;margin-top:5px;padding:8px;background:#111827;color:#e2e8f0;border:1px solid #475569;border-radius:6px;font-size:15px}
+.particle-help{font-size:11px;line-height:1.5;color:#94a3b8;margin-top:7px}
+.particle-summary{font-size:12px;color:#cbd5e1;margin-top:7px}
+.particle-insight{font-size:12px;line-height:1.5;color:#a7f3d0;margin-top:7px}
+/* 작은 화면에서는 Canvas와 조작 패널이 가로로 잘리지 않게 배치 */
+.wrap>div:first-child{min-width:0;max-width:100%}
+canvas{width:760px;height:auto;max-width:100%}
+.panel{box-sizing:border-box;min-width:min(300px,100%)}
+.rectifier-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.quiz-panel{margin:12px 0;padding:12px;background:#111c30;border:1px solid #334155;border-radius:10px;box-sizing:border-box}
+.quiz-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.quiz-title{font-size:15px;font-weight:bold;color:#e2e8f0}
+.quiz-tag{font-size:11px;color:#93c5fd;background:#1e3a5f;padding:3px 7px;border-radius:20px}
+.quiz-intro,.quiz-question{font-size:13px;line-height:1.6;color:#cbd5e1;margin:8px 0}
+.quiz-question{font-size:14px;font-weight:bold;color:#f8fafc}
+.quiz-options{display:grid;gap:7px;margin-top:9px}
+.quiz-option{width:100%;text-align:left;padding:9px 10px;border:1px solid #475569;border-radius:7px;background:#263449;color:#e2e8f0;cursor:pointer;font-size:13px;line-height:1.5}
+.quiz-option:hover{border-color:#60a5fa}
+.quiz-option.selected{background:#1e40af;border-color:#60a5fa;color:#fff}
+.quiz-option:disabled{cursor:default;opacity:1}
+.quiz-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.quiz-actions .btn{margin-top:0;flex:1;min-width:110px}
+.quiz-feedback{margin-top:10px;padding:10px;border-radius:8px;background:#0b1728;border-left:4px solid #64748b;font-size:13px;line-height:1.65;color:#cbd5e1}
+.quiz-feedback.correct{border-left-color:#10b981}
+.quiz-feedback.wrong{border-left-color:#f59e0b}
+.quiz-feedback b{color:#f8fafc}
+.quiz-status{margin-top:8px;font-size:12px;line-height:1.5;color:#93c5fd}
+.quiz-muted{font-size:11px;color:#94a3b8;margin-top:7px;line-height:1.5}
+.rectifier-actions .btn{margin-top:0;flex:1;min-width:120px}
+@media(max-width:420px){.tabs{padding:8px}.tabs button{padding:8px 10px;font-size:13px}.wrap{padding:0 10px 14px}.particle-fields{grid-template-columns:1fr 1fr}.panel{padding:10px}.rectifier-actions .btn{min-width:108px;font-size:13px}}
+
+
+/* ---------- ⑦~⑨ 반도체 캐리어 이론 시각화 ---------- */
+#theoryStage{box-sizing:border-box;min-width:0}
+#theoryCanvas{display:block;width:760px;height:auto;max-width:100%;background:#111827;border:1px solid #334155;border-radius:10px}
+.theory-note{border-left:3px solid #f59e0b}
+.theory-controls{margin-top:10px;padding:10px;background:#0f172a;border:1px solid #334155;border-radius:8px}
+.theory-controls label{margin-top:8px}
+.theory-control-value{color:#fbbf24;font-weight:bold}
+.theory-choice-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.theory-choice-row .choice-btn{min-width:85px}
+.theory-small{font-size:12px;color:#94a3b8;line-height:1.55;margin-top:7px}
+.theory-equation{font-family:Consolas,monospace;color:#fbbf24;font-size:14px;line-height:1.8}
+@media(max-width:520px){.theory-controls{padding:8px}.theory-choice-row .choice-btn{flex:1;min-width:0;font-size:13px;padding:8px 5px}#theorySummary,#theoryDetails{font-size:13px}}
+
+
+
+/* ==========================================================
+   v21 UI: reference-inspired two-frame learning layout
+   Functional JavaScript and all simulation models are unchanged.
+   ========================================================== */
+:root{
+  color-scheme:light;
+  --page:#f6f4ef;
+  --paper:#ffffff;
+  --ink:#242321;
+  --muted:#716e68;
+  --line:#e4dfd6;
+  --accent:#c65329;
+  --accent-dark:#a94320;
+  --soft:#f3eee7;
+  --soft-orange:#fff4eb;
+  --blue:#3285c7;
+  --electron:#3285c7;
+  --hole:#dc625b;
+}
+html{scroll-behavior:smooth;background:var(--page)}
+body{
+  margin:0;
+  background:var(--page);
+  color:var(--ink);
+  font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+  line-height:1.55;
+}
+header{
+  box-sizing:border-box;
+  max-width:1500px;
+  margin:0 auto;
+  padding:22px 24px 9px;
+  background:transparent;
+  color:var(--ink);
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-.045em;
+}
+header::before{
+  content:"반도체 기초 · INTERACTIVE LAB";
+  display:block;
+  margin-bottom:5px;
+  color:var(--accent);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+header small{
+  display:block;
+  margin:5px 0 0;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:400;
+  letter-spacing:0;
+  line-height:1.5;
+}
+.tabs{
+  box-sizing:border-box;
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:stretch;
+  gap:2px;
+  max-width:1500px;
+  margin:0 auto;
+  padding:7px 24px 0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  border-bottom:1px solid var(--line);
+  scrollbar-width:thin;
+  scrollbar-color:#c7bdb1 transparent;
+}
+.tabs button{
+  flex:0 0 auto;
+  min-height:42px;
+  padding:9px 13px 10px;
+  border:0;
+  border-bottom:3px solid transparent;
+  border-radius:0;
+  background:transparent;
+  color:#66615b;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:color .15s ease,background .15s ease,border-color .15s ease;
+}
+.tabs button:hover{background:#eee9e1;color:var(--ink)}
+.tabs button.on{
+  color:var(--accent-dark);
+  background:transparent;
+  border-bottom-color:var(--accent);
+}
+.tabs button:focus-visible,.btn:focus-visible,.choice-btn:focus-visible,.quiz-option:focus-visible{
+  outline:3px solid #e7a181;
+  outline-offset:2px;
+}
+.wrap{
+  display:grid;
+  grid-template-columns:minmax(0,2.18fr) minmax(310px,.96fr);
+  align-items:start;
+  gap:18px;
+  max-width:1500px;
+  margin:0 auto;
+  padding:16px 24px 34px;
+  box-sizing:border-box;
+}
+.simulation-frame{
+  min-width:0;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.simulation-frame>canvas,
+#theoryCanvas{
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  height:auto;
+  border:1px solid #292923;
+  border-radius:12px;
+  background:#111827;
+  box-shadow:0 2px 8px rgba(35,29,20,.08);
+}
+#c{display:block}
+#g{display:block;margin-top:0!important}
+#meas{
+  box-sizing:border-box;
+  width:100%;
+  max-width:none!important;
+  margin:0;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--paper);
+  color:var(--ink);
+  box-shadow:0 1px 3px rgba(45,35,20,.04);
+}
+#theoryStage{
+  width:100%!important;
+  max-width:none!important;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+#theorySummary,#theoryDetails{
+  box-sizing:border-box;
+  width:100%;
+  max-width:none!important;
+  margin:0;
+  padding:13px 15px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--paper);
+  color:var(--ink);
+}
+.control-frame{
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+  min-width:0;
+  width:100%;
+  max-width:none;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--ink);
+}
+#ctrl{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  padding:14px 15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--paper);
+  color:var(--ink);
+  box-shadow:0 1px 3px rgba(45,35,20,.04);
+}
+#ctrl:empty{display:none}
+#quizPanel{width:100%;min-width:0;margin:0;padding:0}
+.quiz-panel{
+  box-sizing:border-box;
+  width:100%;
+  margin:0;
+  padding:14px 15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--paper);
+  color:var(--ink);
+  box-shadow:0 1px 3px rgba(45,35,20,.04);
+}
+.quiz-title{color:var(--ink);font-size:15px}
+.quiz-tag{color:var(--accent-dark);background:var(--soft-orange);font-weight:700}
+.quiz-intro,.quiz-question{color:var(--muted)}
+.quiz-question{color:var(--ink);font-size:14px}
+.quiz-option{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fbfaf8;
+  color:var(--ink);
+  padding:10px 11px;
+}
+.quiz-option:hover{border-color:#d99b7d;background:#fff9f5}
+.quiz-option.selected{background:#fff0e8;border-color:var(--accent);color:#7b3219}
+.quiz-feedback{background:#f6f3ee;color:#393631;border-left-color:#9a9389}
+.quiz-feedback.correct{background:#eff7f0;border-left-color:#45935d}
+.quiz-feedback.wrong{background:#fff5e9;border-left-color:#d38a35}
+.quiz-feedback b{color:var(--ink)}
+.quiz-muted,.quiz-status{color:var(--muted)}
+.quiz-status{padding:9px 10px;border-radius:8px;background:#f4f1eb}
+.btn{
+  margin-top:9px;
+  padding:9px 13px;
+  border:1px solid var(--accent);
+  border-radius:8px;
+  background:var(--accent);
+  color:#fff;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .15s ease,transform .15s ease,box-shadow .15s ease;
+}
+.btn:hover{background:var(--accent-dark);box-shadow:0 2px 6px rgba(170,65,30,.18)}
+.btn:active{transform:translateY(1px)}
+.choice-group{margin-top:10px}
+.choice-title{color:var(--muted);font-weight:700}
+.choice-row,.theory-choice-row{gap:7px}
+.choice-btn{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#f7f5f1;
+  color:#4e4943;
+  font-size:13px;
+  font-weight:700;
+}
+.choice-btn:hover{border-color:#d89a7d;background:#fff8f3}
+.choice-btn.active{
+  background:var(--soft-orange);
+  border-color:var(--accent);
+  color:var(--accent-dark);
+  box-shadow:0 0 0 1px rgba(198,83,41,.12) inset;
+}
+label{display:block;margin-top:10px;color:#4a4640;font-size:13px;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+select{
+  box-sizing:border-box;
+  margin-top:5px;
+  width:100%;
+  padding:8px 9px;
+  border:1px solid #d9d3c9;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ink);
+  font:inherit;
+}
+input[type=number]{border:1px solid #d9d3c9!important;background:#fff!important;color:var(--ink)!important}
+.v,.theory-control-value{color:var(--accent-dark);font-weight:800}
+.ro{color:#817a71}
+.e{color:var(--electron)!important}
+.h{color:var(--hole)!important}
+#T{accent-color:var(--accent)}
+#simOnly{
+  box-sizing:border-box;
+  width:100%;
+  margin:0;
+  padding:13px 15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--paper);
+  color:var(--ink);
+  box-shadow:0 1px 3px rgba(45,35,20,.04);
+}
+.particle-panel{
+  margin:8px 0;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#f8f6f2;
+}
+.particle-title{color:var(--ink)}
+.particle-help,.particle-summary{color:var(--muted)}
+.particle-insight{color:#326c55}
+.box{
+  box-sizing:border-box;
+  margin:0;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--paper);
+  color:#403c36;
+  line-height:1.65;
+}
+.panel>.box.eq{font-size:13px;color:#514b44}
+.exp{
+  box-sizing:border-box;
+  margin:0;
+  padding:13px 15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--paper);
+  color:#504b45;
+  font-size:13px;
+  line-height:1.7;
+  box-shadow:0 1px 3px rgba(45,35,20,.04);
+}
+.exp b{color:var(--ink)}
+.note{
+  box-sizing:border-box;
+  margin:0;
+  padding:12px 14px;
+  border:1px solid #ead8bd;
+  border-radius:11px;
+  background:#fff8ec;
+  color:#76552c;
+  font-size:12px;
+  line-height:1.65;
+}
+#semiDetails{
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--paper);
+  color:var(--ink);
+}
+.detail-btn{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#f7f4ef;
+  color:#514b44;
+  font-weight:700;
+}
+.detail-btn:hover{border-color:#d89a7d;background:#fff8f3}
+.theory-controls{
+  padding:12px 13px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#faf8f4;
+}
+.theory-small{color:var(--muted)}
+.theory-equation{color:var(--accent-dark)}
+#theorySummary{line-height:1.7}
+#theoryDetails{line-height:1.75}
+.rectifier-actions{gap:7px}
+.rectifier-actions .btn{min-width:0}
+@media(max-width:940px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:13px;padding:13px 16px 28px}
+  .control-frame{gap:10px}
+  header{padding:18px 16px 8px;font-size:25px}
+  .tabs{padding-left:16px;padding-right:16px}
+}
+@media(max-width:520px){
+  header{padding:16px 12px 8px;font-size:22px}
+  header small{font-size:12px}
+  .tabs{padding-left:10px;padding-right:10px}
+  .tabs button{min-height:40px;padding:8px 11px;font-size:12px}
+  .wrap{padding:10px 10px 22px;gap:10px}
+  #ctrl,#simOnly,.quiz-panel{padding:11px}
+  .box,.exp,.note{padding:10px 11px}
+  .particle-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rectifier-actions .btn{flex:1 1 45%;font-size:12px}
+}
+/* ---------- v23: clearer controls + live particle-count spheres ---------- */
+:root{
+  --electron:#3285c7;
+  --hole:#dc625b;
+  --control-bg:#fbfaf7;
+  --control-line:#ded8ce;
+}
+#ctrl{
+  padding:16px;
+}
+#ctrl label{
+  display:block;
+  margin:0 0 11px;
+  padding:10px 12px;
+  border:1px solid var(--control-line);
+  border-radius:10px;
+  background:var(--control-bg);
+  color:#37332e;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.55;
+}
+#ctrl label:last-child{margin-bottom:0}
+#ctrl select,#simOnly select{
+  min-height:42px;
+  padding:8px 11px;
+  border:1px solid #cbc3b8;
+  border-radius:9px;
+  background:#fff;
+  color:#26231f;
+  font-size:15px;
+  font-weight:600;
+}
+#ctrl input[type=range],#simOnly input[type=range]{
+  min-height:24px;
+  margin-top:7px;
+  accent-color:var(--accent);
+}
+#ctrl .choice-group{margin:10px 0 0}
+#ctrl .choice-title{font-size:13px;color:#655e55}
+#ctrl .choice-btn{min-height:40px;font-size:14px}
+.btn,.detail-btn,.quiz-actions button{min-height:40px;font-size:14px;font-weight:700}
+#simOnly{
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--paper);
+  color:var(--ink);
+  box-shadow:0 1px 3px rgba(45,35,20,.04);
+}
+#simOnly>label{
+  margin:10px 0;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fbfaf8;
+  font-size:14px;
+  line-height:1.55;
+}
+#simOnly>label:has(input[type=checkbox]){display:flex;align-items:center;gap:8px}
+#simOnly>label input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.particle-panel{
+  padding:13px;
+  background:#fff;
+  border:1px solid #dcd5ca;
+  border-radius:12px;
+  box-shadow:0 1px 3px rgba(45,35,20,.04);
+}
+.particle-title{font-size:15px;font-weight:800;color:#292621;margin-bottom:10px}
+.particle-fields{gap:9px}
+.particle-fields label{
+  padding:9px;
+  border:1px solid #e4ded4;
+  border-radius:9px;
+  background:#faf8f4;
+  font-size:14px;
+  font-weight:800;
+}
+.particle-fields select{font-size:15px;min-height:42px}
+.particle-help{font-size:12px;line-height:1.65;color:#6e685f}
+.particle-summary{
+  padding:9px 10px;
+  border-radius:8px;
+  background:#f2efe9;
+  color:#38342e;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.55;
+}
+.particle-insight{
+  padding:9px 10px;
+  border-radius:8px;
+  background:#eff6f0;
+  color:#315d43;
+  font-size:12px;
+  line-height:1.65;
+}
+.particle-live-visual{
+  box-sizing:border-box;
+  display:grid;
+  gap:11px;
+  width:100%;
+  padding:14px 16px 12px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:linear-gradient(145deg,#fff 0%,#faf8f4 100%);
+  box-shadow:0 2px 7px rgba(45,35,20,.045);
+}
+.particle-live-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.particle-live-heading>div{display:flex;flex-direction:column;gap:2px}
+.particle-live-heading strong{font-size:15px;color:#2d2924}
+.particle-live-heading span{font-size:12px;color:#746d63}
+.particle-live-applied{
+  padding:5px 9px;
+  border-radius:999px;
+  background:#edf5ee;
+  color:#39704a!important;
+  font-size:11px!important;
+  font-weight:800;
+  white-space:nowrap;
+}
+.particle-live-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.particle-orb-card{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-width:0;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+.particle-orb{
+  flex:0 0 82px;
+  width:82px;
+  height:82px;
+  display:grid;
+  place-items:center;
+  box-sizing:border-box;
+  border-radius:50%;
+  color:#fff;
+  text-align:center;
+  box-shadow:inset -7px -9px 14px rgba(0,0,0,.18),inset 5px 6px 12px rgba(255,255,255,.28),0 3px 8px rgba(0,0,0,.12);
+}
+.electron-orb{background:radial-gradient(circle at 32% 25%,#8dc9f4 0%,#398fd0 42%,#1d5b91 100%)}
+.hole-orb{background:radial-gradient(circle at 32% 25%,#ffaaa4 0%,#e26660 42%,#a93634 100%)}
+.particle-orb strong{max-width:100%;padding:0 4px;font-size:18px;font-weight:900;letter-spacing:-.04em;text-shadow:0 1px 2px rgba(0,0,0,.25);font-variant-numeric:tabular-nums}
+.particle-orb-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.particle-orb-copy b{font-size:15px;color:#282520}
+.particle-orb-copy small{font-size:12px;line-height:1.45;color:#766f65}
+.particle-live-foot{padding-top:9px;border-top:1px solid #ece7df;color:#655f56;font-size:12px;line-height:1.55}
+.particle-orb.updated{animation:orbUpdate .42s ease-out}
+@keyframes orbUpdate{0%{transform:scale(.88)}55%{transform:scale(1.07)}100%{transform:scale(1)}}
+#meas{font-size:14px;line-height:1.75}
+#exp,#note,#semiDetails{font-size:14px;line-height:1.75}
+.quiz-option{font-size:14px;line-height:1.6;padding:11px 12px}
+@media(max-width:520px){
+  #ctrl{padding:11px}
+  #ctrl label{padding:9px 10px;font-size:14px}
+  .particle-live-visual{padding:11px;gap:9px}
+  .particle-orb-card{gap:8px;padding:8px}
+  .particle-orb{flex-basis:68px;width:68px;height:68px}
+  .particle-orb strong{font-size:15px}
+  .particle-orb-copy b{font-size:13px}
+  .particle-orb-copy small{font-size:11px}
+  .particle-live-heading span{font-size:11px}
+}
+@media(max-width:360px){.particle-orb-card{flex-direction:column;text-align:center}.particle-orb-copy{align-items:center}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+
+</style></head><body>
+<header>⚡ 반도체 실험실 <small>드리프트 · 디퓨전 · 평형 · 에너지 밴드 · 전파 정류·평활·정전압 · PN 다이오드 · 캐리어 이론</small></header>
+<div class="tabs">
+<button id="t_drift" class="on" onclick="setMode('drift')">① 드리프트</button>
+<button id="t_diff" onclick="setMode('diff')">② 디퓨전</button>
+<button id="t_both" onclick="setMode('both')">③ 드리프트+확산 → 평형(볼츠만 분포)</button>
+<button id="t_band" onclick="setMode('band')">④ 에너지 밴드</button>
+<button id="t_rectify" onclick="setMode('rectify')">⑤ 전파 정류·평활·정전압</button>
+<button id="t_diode" onclick="setMode('diode')">⑥ PN 다이오드 심화</button>
+<button id="t_generation" onclick="setMode('generation')">⑦ 생성과 재결합</button>
+<button id="t_carriers" onclick="setMode('carriers')">⑧ 다수·소수 캐리어</button>
+<button id="t_conductivity" onclick="setMode('conductivity')">⑨ 전도도·저항률</button>
+</div>
+<div class="wrap">
+<div class="simulation-frame">
+<div class="particle-live-visual" id="particleLiveVisual" aria-label="현재 선택한 전자와 정공 수 미리보기">
+  <div class="particle-live-heading">
+    <div><strong>입자 수 미리보기</strong><span>값을 선택하면 공과 시뮬레이션에 바로 적용됩니다.</span></div>
+    <span class="particle-live-applied" id="particleAppliedState">현재 적용 중</span>
+  </div>
+  <div class="particle-live-row">
+    <div class="particle-orb-card electron-orb-card">
+      <div class="particle-orb electron-orb" id="electronOrb" aria-hidden="true"><strong id="electronBallCount">1,000</strong></div>
+      <div class="particle-orb-copy"><b>전자 n</b><small>파란 공 · 음전하</small></div>
+    </div>
+    <div class="particle-orb-card hole-orb-card">
+      <div class="particle-orb hole-orb" id="holeOrb" aria-hidden="true"><strong id="holeBallCount">1,000</strong></div>
+      <div class="particle-orb-copy"><b>정공 p</b><small>빨간 공 · 양전하로 표현</small></div>
+    </div>
+  </div>
+  <div class="particle-live-foot" id="particleLiveFoot">왼쪽 시뮬레이션의 파란 입자와 빨간 입자 개수에도 동일하게 반영됩니다.</div>
+</div>
+<canvas id="c" width="760" height="380"></canvas>
+<canvas id="g" width="760" height="190" style="margin-top:8px"></canvas>
+<div class="box meas" id="meas" style="max-width:740px"></div>
+<div id="theoryStage" style="display:none;max-width:760px;width:100%">
+  <canvas id="theoryCanvas" width="760" height="390" aria-label="반도체 이론 시각화"></canvas>
+  <div class="box" id="theorySummary" style="max-width:740px"></div>
+  <div class="box" id="theoryDetails" style="display:none;max-width:740px"></div>
+</div>
+</div>
+<div class="panel control-frame">
+<div id="ctrl"></div>
+<div id="quizPanel"></div>
+<label>온도 T: <span class="v" id="Tv"></span><input type="range" id="T" min="0" max="10" value="5"></label>
+<div id="simOnly"><div class="ro" id="Dro"></div>
+<div class="particle-panel" id="particlePanel">
+  <div class="particle-title">입자 수 설정 (전자·정공 각각)</div>
+  <div class="particle-fields">
+    <label><span class="e">● 전자 수 n</span>
+      <select id="NeCount" aria-label="전자 입자 수">
+        <option value="1500">1,500개</option><option value="1000" selected>1,000개</option><option value="500">500개</option><option value="250">250개</option><option value="100">100개</option><option value="10">10개</option><option value="1">1개</option><option value="0">0개</option>
+      </select>
+    </label>
+    <label><span class="h">● 정공 수 p</span>
+      <select id="NhCount" aria-label="정공 입자 수">
+        <option value="1500">1,500개</option><option value="1000" selected>1,000개</option><option value="500">500개</option><option value="250">250개</option><option value="100">100개</option><option value="10">10개</option><option value="1">1개</option><option value="0">0개</option>
+      </select>
+    </label>
+  </div>
+  <div class="particle-help">목록에서 0, 1, 10, 100, 250, 500, 1,000, 1,500개 중 선택하세요. 두 종류 합계는 최대 3,000개예요. 표본 입자 수이며 실제 반도체의 cm⁻³ 농도는 아니에요. 다시 시작해도 이 설정은 유지돼요.</div>
+  <div class="particle-summary" id="particleSummary">현재 설정: 전자 1,000개 · 정공 1,000개 · 합계 2,000개</div>
+  <div class="particle-insight" id="particleInsight">전자와 정공의 표본 수가 같아요. 입자 수는 그래프와 전체 흐름 규모에 반영되고, 입자 하나의 이동 속도는 이동도·전기장·온도가 정해요.</div>
+</div>
+<label>시간 배속 (화면 1프레임당 계산 스텝 수)
+<select id="SP">
+<option>1</option><option>2</option><option>5</option><option>10</option><option>20</option><option>50</option><option>100</option>
+</select></label>
+<label><input type="checkbox" id="showE" checked> <span class="e">● 전자</span> 표시</label>
+<label><input type="checkbox" id="showH" checked> <span class="h">● 정공(+)</span> 표시</label>
+<button class="btn" onclick="reset()">🔄 다시 시작</button>
+<button class="btn" id="pb" onclick="togglePause()">⏸ 일시정지</button></div>
+<div class="box eq" id="eq"></div>
+<div class="exp" id="exp"></div>
+<div class="note" id="note"></div><div class="box" id="semiDetails"></div>
+</div></div>
+<script>
+// ===================== 설정값 (한 곳에 모음) =====================
+const CFG = {
+  W: 760, H: 380,
+  N_PER: 1000,        // 종류별 입자 수 (전자 1000 + 정공 1000)
+  VT0: 2.0,           // T = 300 K 에서의 kT/q (임의 단위)
+  MU_P_RATIO: 0.4,    // μp/μn  (Si 근사: 480/1350 ≈ 0.36)
+  E1_MAX: 2.5,        // 탭① 전기장 최대값 (임의 단위)
+  DV3_MAX: 8,         // 탭③ 상자 양끝 전위차 최대 = 8·kT/q (300 K 기준)
+  BINS: 40,
+  DT: {drift: 1, diff: 10, both: 10},      // 탭별 시간 간격 Δt (확산 탭은 크게 잡아 계산량 절약)
+  SPEED: {drift: 1, diff: 5, both: 10}     // 탭별 기본 배속 (프레임당 스텝 수)
+};
+// 종류별 화면 표본 수. CFG.N_PER는 처음 열었을 때의 기본값으로만 사용합니다.
+const MAX_PARTICLES_PER_TYPE = 1500;
+let particleCounts = {e: CFG.N_PER, h: CFG.N_PER};
+const W = CFG.W, H = CFG.H;
+const $ = id => document.getElementById(id);
+const c = $('c'), x = c.getContext('2d'), g = $('g'), gx = g.getContext('2d');
+let P = [], mode = 'drift', paused = false, steps = 0, acc = 0, last = null, frame = 0;
+let vMeas = {e: 0, h: 0}, flux = {e: 0, h: 0}, hist = {e: [], h: []}, yMax = 1;
+
+// 새 이론 탭은 기존 시뮬레이션과 상태를 공유하지 않는 독립 모듈입니다.
+const THEORY_MODES = ['generation', 'carriers', 'conductivity'];
+const theoryCanvas = $('theoryCanvas');
+const tx = theoryCanvas.getContext('2d');
+let theoryFrame = 0;
+let generationSource = 'light';
+let generationPairs = [];
+let generationSerial = 0;
+let generationTotal = 0;
+let recombinationTotal = 0;
+let generationLastSpawn = -1000;
+const MAX_VISIBLE_GENERATION_PAIRS = 12;
+let generationOffscreenActiveProgress = [];
+let generationOffscreenRecombining = [];
+let dopingType = 'n';
+let conductivityType = 'n';
+let theoryDetailsOpen = false;
+
+function val(id, d) { const el = $(id); return el ? +el.value : d; }
+
+// ===================== 물리 (단일 출처) =====================
+function phys() {
+  const Tk = val('T', 5) * 60;                 // 슬라이더 0~10 → 0~600 K (0 K = 이상적 모드)
+  const VT = CFG.VT0 * Tk / 300;               // kT/q ∝ T
+  const muN = val('M', 6) / 10, muP = muN * CFG.MU_P_RATIO;
+  return {Tk, VT, mu: {e: muN, h: muP}, D: {e: muN * VT, h: muP * VT}};   // 아인슈타인: D = μ·kT/q
+}
+function field() {
+  const s = val('E', 0) / 10;
+  if (mode === 'drift') return s * CFG.E1_MAX;
+  if (mode === 'both') return s * CFG.DV3_MAX * CFG.VT0 / W;
+  return 0;
+}
+let spare = null;
+function gauss() {                              // 표준정규분포 난수 (Box-Muller)
+  if (spare !== null) { const s = spare; spare = null; return s; }
+  let u = 0; while (!u) u = Math.random();
+  const r = Math.sqrt(-2 * Math.log(u)), th = 2 * Math.PI * Math.random();
+  spare = r * Math.sin(th); return r * Math.cos(th);
+}
+function step(ph, E) {
+  const dt = CFG.DT[mode];
+  const sig = {e: Math.sqrt(2 * ph.D.e * dt), h: Math.sqrt(2 * ph.D.h * dt)};   // σ = √(2DΔt)
+  const sum = {e: 0, h: 0}, cross = {e: 0, h: 0}, mid = W / 2;
+  for (const p of P) {
+    const s = p.t === 'h' ? 1 : -1;
+    const dx = (mode === 'diff' ? 0 : s * ph.mu[p.t] * E * dt) + sig[p.t] * gauss();   // 드리프트 + 확산
+    const ox = p.x;
+    p.x += dx; p.y += sig[p.t] * gauss();
+    sum[p.t] += dx;
+    if (mode === 'drift') {                     // 주기 경계
+      if (p.x >= W) p.x -= W; if (p.x < 0) p.x += W;
+    } else {                                    // 반사 경계
+      if (p.x < 0) p.x = -p.x; if (p.x > W) p.x = 2 * W - p.x;
+      if (ox < mid && p.x >= mid) cross[p.t]++;
+      if (ox >= mid && p.x < mid) cross[p.t]--;
+    }
+    if (p.y < 20) p.y = 40 - p.y; if (p.y > H - 20) p.y = 2 * (H - 20) - p.y;
+  }
+  for (const t of ['e', 'h']) {
+    const count = particleCounts[t];
+    const averageVelocity = count > 0 ? sum[t] / count / dt : 0;
+    vMeas[t] += 0.01 * (averageVelocity - vMeas[t]);             // 종류별 실제 표본 수로 평균 속도 계산
+    flux[t] += 0.002 * (cross[t] * 1000 / dt - flux[t]);         // 전체 표본의 중앙선 통과 흐름 (/1000 시간단위)
+  }
+  steps += dt;
+}
+
+// ===================== 초기 조건 =====================
+function place(region) {   // region: 'all' | 'left' | 'right' (왼/오른쪽 1/4)
+  if (region === 'left') return Math.random() * W / 4;
+  if (region === 'right') return W - Math.random() * W / 4;
+  return Math.random() * W;
+}
+function reset() {
+  P = []; steps = 0; acc = 0;
+  vMeas = {e: 0, h: 0}; flux = {e: 0, h: 0};
+  const f = val('G', 100) / 100, ic = $('IC') ? $('IC').value : '', ic3 = $('IC3') ? $('IC3').value : '';
+  for (const t of ['e', 'h']) {
+    for (let i = 0; i < particleCounts[t]; i++) {
+      let px;
+      if (mode === 'drift') px = place('all');
+      else if (mode === 'diff') {
+        const crowd = Math.random() < f;
+        px = !crowd ? place('all') : (ic === 'split' && t === 'h') ? place('right') : place('left');
+      } else {
+        px = (ic3 === 'crowd' && t === 'e') ? place('left') : place('all');
+      }
+      P.push({x: px, y: 30 + Math.random() * (H - 60), t});
+    }
+  }
+  hist = {e: binCounts('e'), h: binCounts('h')};
+  updateScale();
+  updateParticleUI();
+}
+
+// ===================== 이론값 (탭③) =====================
+function theoryFrac(k, a, b) {            // 분포 ∝ e^(k x) 일 때 [a,b] 안에 있을 비율
+  if (k === Infinity) return b >= W ? 1 : 0;      // T = 0 K: 전부 오른쪽 벽
+  if (k === -Infinity) return a <= 0 ? 1 : 0;     // T = 0 K: 전부 왼쪽 벽
+  if (Math.abs(k * W) < 1e-9) return (b - a) / W;
+  const m = Math.max(k * a, k * b, k * W, 0);
+  return (Math.exp(k * b - m) - Math.exp(k * a - m)) / (Math.exp(k * W - m) - Math.exp(-m));
+}
+function kOf(t) {
+  const ph = phys(), E = field();
+  if (ph.VT === 0) return E === 0 ? NaN : (t === 'h' ? 1 : -1) * Math.sign(E) * Infinity;   // 0 K: 열운동 없음 → 벽에 완전히 붙음 (E=0이면 정해지지 않음)
+  return (t === 'h' ? 1 : -1) * E / ph.VT;
+}  // n ∝ e^(−qEx/kT), p ∝ e^(+qEx/kT)
+
+function binCounts(t) {
+  const B = CFG.BINS, a = new Array(B).fill(0);
+  for (const p of P) if (p.t === t) a[Math.min(B - 1, Math.floor(p.x / W * B))]++;
+  return a;
+}
+function updateScale() {                   // 설정된 입자 수와 예상 분포에 맞춰 그래프 눈금을 계산
+  const bw = W / CFG.BINS;
+  const maxCount = Math.max(particleCounts.e, particleCounts.h);
+  const base = maxCount / CFG.BINS;
+  let m = Math.max(1, 2 * base);
+  if (mode === 'diff') {
+    const f = val('G', 100) / 100;
+    for (const t of ['e', 'h']) {
+      const speciesBase = particleCounts[t] / CFG.BINS;
+      m = Math.max(m, speciesBase * (4 * f + 1 - f) * 1.1);
+    }
+  }
+  if (mode === 'both') {
+    for (const t of ['e', 'h']) {
+      const k = kOf(t);
+      if (isNaN(k)) continue;
+      m = Math.max(m, particleCounts[t] * Math.max(theoryFrac(k, 0, bw), theoryFrac(k, W - bw, W)) * 1.15);
+    }
+    if ($('IC3') && $('IC3').value === 'crowd') m = Math.max(m, particleCounts.e / CFG.BINS * 4.4);
+  }
+  yMax = Number.isFinite(m) && m > 0 ? m : 1;
+}
+
+// ===================== 화면 구성 =====================
+const UI = {
+drift: {
+ ctrl: `<label>전기장 E 세기·방향: <span class="v" id="Ev"></span><input type="range" id="E" min="-10" max="10" value="5"></label>
+<label>전자 이동도 μₙ: <span class="v" id="Mv"></span><input type="range" id="M" min="0" max="10" value="6"></label>`,
+ eq: `드리프트 속도<br>&nbsp; 전자: v<sub>n</sub> = −μₙE &nbsp; 정공: v<sub>p</sub> = +μₚE<br>드리프트 전류밀도<br>&nbsp; J = qnμₙE + qpμₚE = q(nμₙ + pμₚ)E<br>이동도 μ = qτ/m* &nbsp;(τ: 충돌 사이 평균 시간)`,
+ exp: `<b>드리프트(표동)</b>: 전기장이 걸리면 전하가 힘 <b>F = qE</b>를 받아 한쪽으로 끌려가는 현상이에요.<br>
+• 정공(+)은 E 방향으로, 전자(−)는 E와 <b>반대 방향</b>으로 움직여요.<br>
+• 그래도 <b>전류는 둘 다 E 방향</b>이에요. 전자는 음전하라서 반대로 움직이면 전류는 E 방향이 돼요.<br>
+• 지그재그는 열운동(산란) 때문이에요. 입자는 <b>평균적으로만</b> 한쪽으로 흘러가요. 아래 '측정 평균 속도'가 이론값 μE와 같은지 확인해 보세요.<br>
+• μ를 올리면 드리프트뿐 아니라 <b>지그재그(확산)도 함께 커져요</b>. 둘 다 같은 산란에서 나오기 때문이에요(아인슈타인 관계 D = μ·kT/q).`,
+ note: `⚠ 단순화한 부분<br>• 보기 쉽게 드리프트를 과장했어요. 실제 Si에서는 E = 100 V/cm일 때 드리프트 속도가 열속도의 약 1% 정도예요(대략적인 크기).<br>• μₚ = 0.4·μₙ은 Si 근사값이에요(약 480 대 1350 cm²/V·s). GaAs나 Ge에서는 비율이 달라요.<br>• μ는 온도와 상관없이 고정했어요. 실제로는 온도에 따라 달라져요.<br>• 도핑, 재결합, 속도 포화, 입자 사이 전기력은 넣지 않았어요. 단위는 임의 단위예요.<br>• <b>0 K는 사고실험</b>이에요. 실제 반도체는 0 K에서 자유 전자·정공이 거의 없어 부도체처럼 돼요(캐리어 동결). 여기서는 '열운동만 끄면 어떻게 될까?'를 보려고 캐리어와 μ를 그대로 둔 이상적 모드예요.`
+},
+diff: {
+ ctrl: `<label>초기 조건
+<select id="IC"><option value="pair">전자·정공을 함께 왼쪽에 모으기 (빛으로 쌍을 만든 상황)</option>
+<option value="split">전자는 왼쪽, 정공은 오른쪽 (PN접합 직후와 비슷)</option></select></label>
+<label>초기 농도 차이: <span class="v" id="Gv"></span><input type="range" id="G" min="0" max="100" step="10" value="100"></label>
+<label>전자 이동도 μₙ: <span class="v" id="Mv"></span><input type="range" id="M" min="0" max="10" value="6"></label>`,
+ eq: `확산 전류밀도<br>&nbsp; Jₙ = +qDₙ(dn/dx) &nbsp; Jₚ = −qDₚ(dp/dx)<br>아인슈타인 관계<br>&nbsp; Dₙ = μₙ·kT/q, &nbsp; Dₚ = μₚ·kT/q<br>&nbsp; → Dₚ = 0.4·Dₙ (정공이 더 천천히 퍼져요)`,
+ exp: `<b>디퓨전(확산)</b>: 전기장이 없어도 <b>농도가 높은 곳에서 낮은 곳</b>으로 퍼지는 현상이에요.<br>
+• 원인은 무작위 열운동이에요. 많은 쪽에서 넘어가는 입자가 적은 쪽에서 넘어오는 입자보다 많아서 퍼져요.<br>
+• 기울기 dn/dx가 클수록 <b>확산 흐름(플럭스)이 커져요</b>. 입자 하나하나가 빨라지는 건 아니에요.<br>
+• 닫힌 상자이고 전기장이 없으면 결국 농도가 균일해지고 흐름이 0이 돼요.<br>
+• <b>초기 조건을 비교해 보세요.</b> '함께 왼쪽'에서는 전자와 정공이 같은 방향으로 퍼져서 두 전류가 서로 상쇄돼요(전자가 더 빨라 일부만 남아요). '전자 왼쪽 / 정공 오른쪽'에서는 서로 반대 방향으로 퍼져서 두 전류가 <b>더해져요</b>.`,
+ note: `⚠ 단순화한 부분<br>• 실제 반도체에서 전자가 정공보다 앞서 나가면, 전하가 분리되면서 서로 끌어당기는 전기장(앰비폴라 전기장)이 생겨요. 이 시뮬레이션은 입자 사이 전기력을 넣지 않았어요.<br>• 도핑이 불균일한 반도체에서는 내부 전기장이 생기기 때문에 평형 상태가 균일 분포가 아니에요.<br>• 너무 느리면 '시간 배속'을 올려 보세요.<br>• 0 K와 μ = 0은 '열운동이 없으면?', '이동도가 없으면?'을 보는 이상적 사고실험이에요.`
+},
+both: {
+ ctrl: `<label>초기 조건
+<select id="IC3"><option value="uniform">균일하게 시작</option>
+<option value="crowd">전자를 왼쪽에 모아서 시작</option></select></label>
+<label>외부 전기장 E: <span class="v" id="Ev"></span><input type="range" id="E" min="-10" max="10" value="4"></label>
+<label>전자 이동도 μₙ: <span class="v" id="Mv"></span><input type="range" id="M" min="0" max="10" value="6"></label>`,
+ eq: `Jₙ = qnμₙE + qDₙ(dn/dx)<br>Jₚ = qpμₚE − qDₚ(dp/dx)<br>J = Jₙ + Jₚ<br>평형 (Jₙ = 0, Jₚ = 0 <b>각각</b>):<br>&nbsp; n(x) ∝ e<sup>−qEx/kT</sup>, &nbsp; p(x) ∝ e<sup>+qEx/kT</sup><br>&nbsp; 특성 길이 λ = kT/(qE)<br>&nbsp; ← μ와 상관없고, 전자와 정공이 같아요`,
+ exp: `<b>드리프트와 확산의 경쟁</b><br>
+• 상자에 균일한 전기장 E(→)를 걸면 전자는 왼쪽으로, 정공은 오른쪽으로 드리프트해요.<br>
+• 한쪽에 쌓이면 농도 차이가 생겨서 확산이 <b>반대 방향</b>으로 일어나요.<br>
+• 두 흐름이 같아지면 <b>Jₙ = 0, Jₚ = 0이 각각</b> 성립해요. 입자는 계속 움직이지만 알짜 흐름은 0이고, 농도는 <b>볼츠만 분포</b>를 따라요. 기압이 높이에 따라 지수함수로 줄어드는 것과 같은 원리예요.<br>
+• '전자를 왼쪽에 모아서 시작'을 고르면 확산은 전자를 오른쪽으로 보내요. 이때 E를 <b>오른쪽(+, →)</b>으로 걸면 전자는 E의 반대인 왼쪽으로 드리프트해서 확산을 상쇄해요. 어떻게 시작해도 결국 같은 평형에 도달해요.<br>
+• <b>확인해 볼 것</b>: μ를 바꿔도 최종 분포는 그대로예요(평형에 도달하는 속도만 달라져요). 온도를 올리면 분포가 완만해져요. 점선(이론 곡선)과 막대를 비교해 보세요.`,
+ note: `⚠ PN접합과의 차이<br>• 실제 PN접합에서는 전기장을 바깥에서 걸지 않아요. 확산 뒤에 남은 고정 이온(공간전하)이 전기장을 <b>스스로</b> 만들어요(포아송 방정식 dE/dx = ρ/ε).<br>• 이 실험은 그 내부 전기장을 균일한 외부 전기장으로 대신한 모형이에요. 입자 사이 전기력이 없어서, 쌓인 전하가 전기장을 바꾸는 효과(스크리닝)도 없어요.<br>• 0 K, μ = 0은 이상적 사고실험이에요. 실제 반도체는 0 K에서 자유 캐리어가 거의 없어요.`
+}};
+
+// ===================== 탭별 예측 학습 =====================
+// 문제 추가는 아래 QUIZ_BANK의 해당 탭 배열에 객체를 한 개 더 넣으면 됩니다.
+const QUIZ_BANK = {
+  drift: [
+    {
+      q: '전기장이 오른쪽(→)을 향할 때, 전자와 정공의 평균 이동 방향은?',
+      options: [
+        {text: '전자 ←, 정공 →', whyWrong: '이 선택은 전하의 부호에 따른 움직임을 올바르게 구분한 경우예요.'},
+        {text: '전자 →, 정공 ←', whyWrong: '전기장 방향으로 모든 입자가 움직인다고 생각하기 쉬워요. 하지만 전자는 음전하라 힘의 방향이 전기장과 반대예요.'},
+        {text: '전자와 정공 모두 →', whyWrong: '전류의 방향과 입자의 이동 방향을 혼동하기 쉬워요. 전류는 두 종류 모두 전기장 방향이지만, 전자 자체는 반대로 움직여요.'}
+      ],
+      correct: 0,
+      explanation: '정공은 양전하라 전기장 방향으로, 전자는 음전하라 전기장 반대 방향으로 평균 이동해요. 그래서 전기장이 오른쪽이면 정공은 오른쪽, 전자는 왼쪽으로 움직입니다.'
+    },
+    {
+      q: '전기장과 온도를 그대로 둔 채 전자 이동도 μₙ을 높이면 전자의 드리프트 속력은?',
+      options: [
+        {text: '커진다', whyWrong: '올바른 예측이에요.'},
+        {text: '작아진다', whyWrong: '이동도가 커지면 같은 전기장에 더 잘 반응하므로 속력이 줄어들지 않아요.'},
+        {text: '방향만 바뀌고 속력은 같다', whyWrong: '이동도는 방향을 뒤집는 값이 아니라 전기장에 대한 반응 크기를 바꾸는 값이에요.'}
+      ],
+      correct: 0,
+      explanation: '드리프트 속도의 크기는 이동도와 전기장 세기에 비례해요. 같은 전기장이라면 이동도가 클수록 평균 이동 속력도 커집니다.'
+    },
+    {
+      q: '전기장을 0으로 만들면, 실온에서 입자는 어떻게 움직일까?',
+      options: [
+        {text: '열운동은 남지만 평균 드리프트는 사라진다', whyWrong: '올바른 예측이에요.'},
+        {text: '모든 입자가 완전히 정지한다', whyWrong: '전기장에 의한 한쪽 방향의 이동과 무작위 열운동을 같은 것으로 생각하기 쉬워요. 전기장이 없어도 열운동은 계속돼요.'},
+        {text: '전자만 한쪽으로 계속 이동한다', whyWrong: '전기장이 없으면 전자만 한 방향으로 밀어 주는 원인이 없어요. 무작위 움직임의 평균은 0에 가까워집니다.'}
+      ],
+      correct: 0,
+      explanation: '전기장이 0이면 평균적인 드리프트는 없어져요. 하지만 온도가 0 K가 아니므로 입자들은 열운동으로 계속 지그재그 움직입니다.'
+    }
+  ],
+  diff: [
+    {
+      q: '왼쪽에 입자가 많이 모여 있고 오른쪽은 적다면, 순확산 흐름은 어느 쪽일까?',
+      options: [
+        {text: '왼쪽에서 오른쪽으로', whyWrong: '올바른 예측이에요.'},
+        {text: '오른쪽에서 왼쪽으로', whyWrong: '입자가 적은 쪽에서 많은 쪽으로 모인다고 생각하기 쉬워요. 하지만 무작위 이동 중에는 많은 쪽에서 넘어오는 수가 더 많아요.'},
+        {text: '양쪽에서 이동량이 항상 같다', whyWrong: '양쪽 입자가 무작위로 움직이는 것은 맞지만, 농도가 다르면 높은 농도 쪽에서 넘어오는 입자 수가 더 많아요.'}
+      ],
+      correct: 0,
+      explanation: '입자는 양쪽으로 무작위 이동하지만, 왼쪽에 더 많으므로 왼쪽에서 오른쪽으로 넘어오는 입자가 더 많아요. 그래서 순확산은 높은 농도에서 낮은 농도 방향으로 생깁니다.'
+    },
+    {
+      q: '이동도 μₙ을 고정하고 온도 T를 높이면, 이 시뮬레이션의 확산계수 Dₙ은?',
+      options: [
+        {text: '커진다', whyWrong: '올바른 예측이에요.'},
+        {text: '작아진다', whyWrong: '온도가 높아지면 열운동이 약해진다고 생각한 것 같아요. 실제로는 열운동이 강해져 확산이 커집니다.'},
+        {text: '변하지 않는다', whyWrong: '이동도가 같아도 확산계수는 온도와 무관하지 않아요. 앱은 아인슈타인 관계에 따라 온도에 비례하도록 계산해요.'}
+      ],
+      correct: 0,
+      explanation: '이 앱은 아인슈타인 관계 D = μkT/q를 사용해요. 이동도를 고정하면 온도가 높을수록 확산계수도 커지고, 입자가 더 넓게 퍼집니다.'
+    },
+    {
+      q: '초기 농도 차이를 0%에서 100%로 키우면, 시작 직후 순확산 흐름은 보통 어떻게 될까?',
+      options: [
+        {text: '더 커진다', whyWrong: '올바른 예측이에요.'},
+        {text: '더 작아진다', whyWrong: '농도 차이가 작을수록 흐름이 커진다고 생각하기 쉬워요. 하지만 확산을 만드는 농도 기울기는 차이가 클수록 커집니다.'},
+        {text: '항상 같은 크기다', whyWrong: '입자 하나의 무작위 움직임은 같아도, 한쪽에서 넘어오는 입자 수의 차이가 커지므로 순흐름은 달라져요.'}
+      ],
+      correct: 0,
+      explanation: '초기 농도 차이가 클수록 높은 농도 쪽에서 낮은 농도 쪽으로 넘어오는 입자 수의 차이가 커져요. 따라서 시작 직후의 순확산 흐름도 커집니다.'
+    }
+  ],
+  both: [
+    {
+      q: '열평형에 도달하면 전자 전류와 정공 전류는 각각 어떻게 될까?',
+      options: [
+        {text: '전자 전류와 정공 전류가 각각 0이다', whyWrong: '올바른 예측이에요.'},
+        {text: '두 전류의 합만 0이고, 각각은 0이 아닐 수 있다', whyWrong: '전체 전류가 0이라는 조건만 기억하면 그럴듯해요. 하지만 이 모델의 열평형에서는 전자와 정공 각각의 드리프트 전류와 확산 전류가 상쇄돼요.'},
+        {text: '전자 전류만 0이고 정공 전류는 흐른다', whyWrong: '전자와 정공을 다르게 생각하기 쉽지만, 열평형 조건은 두 종류의 캐리어 각각에 적용돼요.'}
+      ],
+      correct: 0,
+      explanation: '열평형에서는 전자에 대해 Jₙ = 0, 정공에 대해 Jₚ = 0이 각각 성립해요. 각 종류 안에서 드리프트와 확산이 서로 상쇄됩니다.'
+    },
+    {
+      q: '열평형에 도달한 뒤 입자들은 완전히 멈출까?',
+      options: [
+        {text: '아니다. 계속 움직이지만 순흐름이 0이다', whyWrong: '올바른 예측이에요.'},
+        {text: '그렇다. 모든 입자가 멈춘다', whyWrong: '전류가 0이라는 말을 입자가 정지한다는 뜻으로 오해하기 쉬워요. 실제로는 양방향 이동이 균형을 이뤄요.'},
+        {text: '전자만 움직이고 정공은 멈춘다', whyWrong: '평형은 한 종류만 멈추는 상태가 아니에요. 두 종류 모두 열운동을 계속합니다.'}
+      ],
+      correct: 0,
+      explanation: '평형은 입자 움직임이 사라진 상태가 아니에요. 입자들은 계속 움직이지만, 서로 반대 방향의 이동량이 균형을 이루어 알짜 전류가 0이 됩니다.'
+    },
+    {
+      q: '외부 전기장이 오른쪽(→)일 때, 평형 상태에서 전자 농도가 더 높은 쪽은?',
+      options: [
+        {text: '왼쪽', whyWrong: '올바른 예측이에요.'},
+        {text: '오른쪽', whyWrong: '전기장 방향으로 전자가 모일 것처럼 보이지만, 전자는 음전하라 전기장 반대쪽으로 드리프트해요.'},
+        {text: '왼쪽과 오른쪽이 같다', whyWrong: '전기장이 0일 때는 균일 분포가 가능하지만, 이 모델에서는 전기장이 만든 위치별 평형 분포가 나타나요.'}
+      ],
+      correct: 0,
+      explanation: '전자는 음전하라 오른쪽 전기장에서 왼쪽으로 드리프트해요. 평형에서는 이를 상쇄하도록 전자 농도가 왼쪽에서 더 높아지는 볼츠만 분포가 만들어집니다.'
+    }
+  ],
+  band: [
+    {
+      q: 'n형 반도체로 도핑하면 페르미 준위 E_F는 어느 쪽으로 이동할까?',
+      options: [
+        {text: '전도대 E_C 쪽으로 가까워진다', whyWrong: '올바른 예측이에요.'},
+        {text: '가전자대 E_V 쪽으로 가까워진다', whyWrong: '다수 캐리어가 정공인 p형의 특징과 바꾸어 생각하기 쉬워요. n형은 전자가 많아져 E_F가 위쪽으로 이동해요.'},
+        {text: '항상 밴드갭 정중앙에 머문다', whyWrong: '진성 반도체의 경우와 혼동하기 쉬워요. 도핑은 캐리어 농도를 바꾸므로 E_F 위치도 달라집니다.'}
+      ],
+      correct: 0,
+      explanation: 'n형은 도너가 전자를 제공해 전자 농도가 커져요. 이에 따라 페르미 준위가 전도대 쪽으로 가까워집니다.'
+    },
+    {
+      q: 'p형 반도체로 도핑하면 페르미 준위 E_F는 어느 쪽으로 이동할까?',
+      options: [
+        {text: '가전자대 E_V 쪽으로 가까워진다', whyWrong: '올바른 예측이에요.'},
+        {text: '전도대 E_C 쪽으로 가까워진다', whyWrong: '전자 농도가 많아지는 n형과 혼동하기 쉬워요. p형은 정공이 많아져 E_F가 아래쪽으로 이동해요.'},
+        {text: '도핑해도 위치가 변하지 않는다', whyWrong: '도핑은 반도체의 캐리어 농도를 바꾸기 때문에 페르미 준위에도 영향을 줍니다.'}
+      ],
+      correct: 0,
+      explanation: 'p형은 억셉터가 정공을 만들기 쉬워져 정공 농도가 커져요. 따라서 페르미 준위가 가전자대 쪽으로 가까워집니다.'
+    },
+    {
+      q: '진성 반도체와 비교했을 때 n형·p형 도핑의 가장 중요한 변화는?',
+      options: [
+        {text: '다수 캐리어가 생기고 페르미 준위가 이동한다', whyWrong: '올바른 예측이에요.'},
+        {text: '밴드갭이 반드시 0이 된다', whyWrong: '전도대와 가전자대 사이의 에너지 간격을 캐리어 농도 변화와 혼동한 것 같아요. 일반적인 도핑만으로 밴드갭이 0이 되지는 않아요.'},
+        {text: '전자와 정공이 모두 사라진다', whyWrong: '도핑은 캐리어를 없애는 과정이 아니라, 전자 또는 정공 중 한쪽이 더 많아지도록 만드는 과정이에요.'}
+      ],
+      correct: 0,
+      explanation: '도핑하면 n형에서는 전자가, p형에서는 정공이 다수 캐리어가 돼요. 그에 맞춰 페르미 준위도 전도대 또는 가전자대 방향으로 이동합니다.'
+    }
+  ],
+  rectify: [
+    {
+      q: '입력 주파수와 부하를 그대로 둔 채 평활 콘덴서 용량을 키우면, 콘덴서 전압의 리플은?',
+      options: [
+        {text: '작아진다', whyWrong: '올바른 예측이에요.'},
+        {text: '커진다', whyWrong: '용량이 커지면 더 많은 전하를 저장하므로 전압 변화가 더 커질 것처럼 느껴질 수 있어요. 하지만 같은 부하에서는 방전 중 전압이 더 천천히 떨어져요.'},
+        {text: '변하지 않는다', whyWrong: '리플은 콘덴서가 정류 피크 사이에서 얼마나 방전되는지에 영향을 받으므로 용량과 관계가 있어요.'}
+      ],
+      correct: 0,
+      explanation: '같은 부하에서 큰 콘덴서는 더 많은 전하를 저장하고 피크 사이에 전압이 천천히 떨어져요. 따라서 리플의 크기가 작아집니다.'
+    },
+    {
+      q: '평활 콘덴서 용량을 그대로 두고 입력 주파수를 높이면, 정류 파형의 충전 피크 사이 간격은?',
+      options: [
+        {text: '좁아진다', whyWrong: '올바른 예측이에요.'},
+        {text: '넓어진다', whyWrong: '주파수가 높으면 주기가 길어진다고 생각한 것 같아요. 주파수와 주기는 반비례하므로 피크가 더 자주 나타납니다.'},
+        {text: '같다', whyWrong: '정류 파형의 피크 간격은 입력 주파수에 따라 달라집니다.'}
+      ],
+      correct: 0,
+      explanation: '주파수가 높을수록 한 주기가 짧아져 충전 피크가 더 자주 나타나요. 그래서 피크 사이 시간 간격은 좁아집니다.'
+    },
+    {
+      q: '입력이 너무 낮거나 부하가 너무 무거워 제너 정전압 회로의 동작 범위를 벗어나면 출력은?',
+      options: [
+        {text: '기준 전압보다 낮아질 수 있다', whyWrong: '올바른 예측이에요.'},
+        {text: '항상 기준 전압으로 완벽하게 고정된다', whyWrong: '정전압 회로가 모든 조건에서 전압을 만들어 낸다고 생각하기 쉬워요. 하지만 제너에 필요한 전류가 부족하면 조절 능력을 잃어요.'},
+        {text: '입력보다 더 높은 전압으로 자동 상승한다', whyWrong: '이 회로는 승압기가 아니에요. 에너지가 부족하면 출력은 기준 전압을 유지하지 못하고 내려갈 수 있어요.'}
+      ],
+      correct: 0,
+      explanation: '제너 정전압 회로는 제너 다이오드에 필요한 최소 전류가 흐를 때만 출력을 안정시켜요. 입력이 부족하거나 부하 전류가 너무 크면 출력 전압이 기준 전압보다 낮아집니다.'
+    }
+  ],
+  diode: [
+    {
+      q: 'PN 다이오드에 순방향 바이어스를 걸면 공핍층 폭은 어떻게 될까?',
+      options: [
+        {text: '좁아진다', whyWrong: '올바른 예측이에요.'},
+        {text: '넓어진다', whyWrong: '전압을 걸면 장벽이 커질 것처럼 생각하기 쉬워요. 하지만 순방향 전압은 내부 장벽을 낮춰 공핍층을 줄입니다.'},
+        {text: '변하지 않는다', whyWrong: '공핍층은 양쪽 전압 조건에 영향을 받기 때문에 바이어스 방향에 따라 폭이 달라져요.'}
+      ],
+      correct: 0,
+      explanation: '순방향 바이어스는 내부 전위 장벽을 낮춰요. 이동 가능한 전자와 정공이 접합부 쪽으로 더 쉽게 접근하면서 공핍층 폭이 좁아집니다.'
+    },
+    {
+      q: 'PN 다이오드에 역방향 바이어스를 걸면 공핍층 폭은 어떻게 될까?',
+      options: [
+        {text: '넓어진다', whyWrong: '올바른 예측이에요.'},
+        {text: '좁아진다', whyWrong: '순방향 바이어스에서 일어나는 변화를 반대로 기억했을 수 있어요. 역방향은 내부 장벽을 더 크게 만듭니다.'},
+        {text: '항상 0이 된다', whyWrong: '역방향 전압은 공핍층을 없애는 것이 아니라 더 넓게 만듭니다.'}
+      ],
+      correct: 0,
+      explanation: '역방향 바이어스는 내부 장벽을 높이고 접합부에서 이동 가능한 캐리어를 더 멀리 밀어내요. 따라서 공핍층 폭이 넓어집니다.'
+    },
+    {
+      q: '이상적인 PN 다이오드에 역방향 전압을 걸었을 때, 항복 전압에 도달하기 전의 전류는?',
+      options: [
+        {text: '매우 작은 누설 전류가 흐른다', whyWrong: '올바른 예측이에요.'},
+        {text: '순방향과 같은 큰 전류가 흐른다', whyWrong: '전압의 크기만 보고 전류도 커질 거라 생각하기 쉬워요. 역방향에서는 다수 캐리어가 접합부를 넘어가기 어려워 전류가 매우 작아요.'},
+        {text: '전류가 항상 정확히 0이다', whyWrong: '이상적인 그림에서는 0처럼 보일 수 있지만, 실제 다이오드에는 소수 캐리어에 의한 작은 역방향 누설 전류가 있어요.'}
+      ],
+      correct: 0,
+      explanation: '항복 전압 전의 역방향 전류는 소수 캐리어에 의한 매우 작은 누설 전류예요. 이 앱은 항복 현상을 모델링하지 않으므로 역방향 전류가 작게 나타납니다.'
+    }
+  ]
+};
+
+// 정답 위치가 한쪽에 몰리지 않도록 탭마다 A/B/C를 한 번씩 사용합니다.
+// 보기 객체 자체를 이동하므로 보기별 오답 설명(whyWrong)도 함께 이동합니다.
+const QUIZ_CORRECT_LAYOUT = {
+  drift:   [1, 0, 2],
+  diff:    [2, 1, 0],
+  both:    [0, 2, 1],
+  band:    [1, 2, 0],
+  rectify: [2, 0, 1],
+  diode:   [0, 1, 2]
+};
+for (const [tab, positions] of Object.entries(QUIZ_CORRECT_LAYOUT)) {
+  const questions = QUIZ_BANK[tab] || [];
+  questions.forEach((question, index) => {
+    const target = positions[index % positions.length];
+    const correctOption = question.options.splice(question.correct, 1)[0];
+    question.options.splice(target, 0, correctOption);
+    question.correct = target;
+  });
+}
+const quizStates = Object.create(null);
+const modeControlState = Object.create(null);
+function getQuizState(m = mode) {
+  if (!quizStates[m]) quizStates[m] = {index: 0, started: false, selected: null, checked: false, verified: false, notice: ''};
+  return quizStates[m];
+}
+function quizVerificationMessage(question) {
+  if (mode === 'drift' || mode === 'diff' || mode === 'both') {
+    return '<div class="quiz-status" role="status"><b>시뮬레이션 재생 중</b> · 현재 조작값을 유지한 채 입자 움직임과 농도 변화를 관찰하세요.</div>';
+  }
+  if (mode === 'rectify') {
+    return '<div class="quiz-status" role="status"><b>회로 파형 재생 중</b> · 현재 전압·주파수·콘덴서·부하 설정을 유지한 채 정류, 리플, 출력 전압을 관찰하세요.</div>';
+  }
+  if (mode === 'band') {
+    let guidance;
+    const asksN = question.q.includes('n형 반도체로 도핑');
+    const asksP = question.q.includes('p형 반도체로 도핑');
+    if (asksN) {
+      guidance = '왼쪽의 도핑 종류에서 <b>n형</b>을 선택하고, 초록색 점선인 페르미 준위 E<sub>F</sub>가 전도대 E<sub>C</sub> 쪽에 가까워지는지 보세요.';
+    } else if (asksP) {
+      guidance = '왼쪽의 도핑 종류에서 <b>p형</b>을 선택하고, 초록색 점선인 페르미 준위 E<sub>F</sub>가 가전자대 E<sub>V</sub> 쪽에 가까워지는지 보세요.';
+    } else {
+      guidance = '왼쪽의 도핑 종류에서 <b>n형</b>과 <b>p형</b>을 번갈아 선택하세요. 초록색 점선 E<sub>F</sub>가 n형에서는 위쪽, p형에서는 아래쪽으로 이동하는지 비교해 보세요.';
+    }
+    const current = $('DOP') ? $('DOP').value : 'n';
+    const currentLabel = current === 'n' ? 'n형' : current === 'p' ? 'p형' : '진성';
+    return `<div class="quiz-status" role="status"><b>밴드 조작으로 확인</b><br>${guidance}<br><span class="quiz-muted">안내를 열었을 때 선택된 설정: ${currentLabel}. 자동으로 값을 바꾸지 않았습니다. 직접 선택해 비교하세요.</span></div>`;
+  }
+  if (mode === 'diode') {
+    let guidance;
+    if (question.q.includes('항복 전압') || question.q.includes('전류는')) {
+      guidance = '전압 슬라이더를 <b>왼쪽(−) 방향</b>으로 움직여 역방향 바이어스를 만드세요. 측정 설명에서 아주 작은 누설 전류가 나타나는지 확인하세요. 이 모델은 항복 전압이나 항복 이후의 전류를 계산하지 않습니다.';
+    } else if (question.q.includes('순방향')) {
+      guidance = '전압 슬라이더를 <b>오른쪽(+) 방향</b>으로 움직이세요. 장벽이 낮아지고 공핍층 폭이 좁아지는지 관찰하세요.';
+    } else if (question.q.includes('역방향')) {
+      guidance = '전압 슬라이더를 <b>왼쪽(−) 방향</b>으로 움직이세요. 장벽이 높아지고 공핍층 폭이 넓어지는지 관찰하세요.';
+    } else {
+      guidance = '전압 슬라이더를 왼쪽(−)과 오른쪽(+)으로 움직이며 역방향과 순방향의 공핍층 폭을 비교하세요.';
+    }
+    const current = $('VBv') ? $('VBv').textContent : '현재 전압';
+    return `<div class="quiz-status" role="status"><b>바이어스 조절로 확인</b><br>${guidance}<br><span class="quiz-muted">안내를 열었을 때 전압: ${current}. 자동으로 전압을 바꾸지 않았습니다. 슬라이더를 직접 조작하세요.</span></div>`;
+  }
+  return '<div class="quiz-status" role="status">현재 탭의 조작값을 유지하고 화면의 변화를 확인하세요.</div>';
+}
+function quizVerificationButtonLabel() {
+  if (mode === 'band') return '밴드 조작 방법 보기';
+  if (mode === 'diode') return '바이어스 조절 방법 보기';
+  if (mode === 'rectify') return '회로 파형으로 확인';
+  return '시뮬레이션으로 확인';
+}
+function quizVerificationHint() {
+  if (mode === 'band') return '도핑 종류를 직접 바꾸어 페르미 준위 위치를 비교합니다. 기존 설정은 자동 변경하지 않습니다.';
+  if (mode === 'diode') return '전압 슬라이더를 직접 움직여 순방향·역방향 상태를 비교합니다. 기존 전압은 자동 변경하지 않습니다.';
+  if (mode === 'rectify') return '현재 회로 설정을 유지한 채 파형 재생을 시작합니다.';
+  return '현재 설정을 유지한 채 입자 시뮬레이션을 재생합니다.';
+}
+function renderQuizPanel() {
+  const panel = $('quizPanel');
+  if (!panel) return;
+  const bank = QUIZ_BANK[mode];
+  if (!bank) { panel.innerHTML = ''; return; }
+  const state = getQuizState(mode);
+  const idx = Math.min(state.index, bank.length - 1);
+  const question = bank[idx];
+  if (!state.started) {
+    panel.innerHTML = `<section class="quiz-panel"><div class="quiz-head"><div class="quiz-title">먼저 예측하고 확인하기</div><span class="quiz-tag">${bank.length}문제 준비됨</span></div><p class="quiz-intro">현재 탭에서 다루는 개념을 먼저 생각해 보세요. 답을 고르기 전에는 정답이 표시되지 않습니다.</p><button class="btn" type="button" onclick="startQuiz()">예측 문제</button></section>`;
+    return;
+  }
+  const options = question.options.map((opt, i) => {
+    const selected = state.selected === i ? ' selected' : '';
+    return `<button type="button" class="quiz-option${selected}" onclick="chooseQuizAnswer(${i})" ${state.checked ? 'disabled' : ''}><b>${String.fromCharCode(65+i)}.</b> ${opt.text}</button>`;
+  }).join('');
+  let feedback = '';
+  if (state.checked) {
+    const isCorrect = state.selected === question.correct;
+    const selectedOption = question.options[state.selected];
+    feedback = isCorrect
+      ? `<div class="quiz-feedback correct"><b>정답이에요.</b> ${question.explanation}</div>`
+      : `<div class="quiz-feedback wrong"><b>아직 정답은 아니에요.</b><br><b>선택한 답이 그럴듯해 보이는 이유:</b> ${selectedOption.whyWrong}<br><b>올바른 원리:</b> ${question.explanation}<br><b>정답:</b> ${String.fromCharCode(65+question.correct)}. ${question.options[question.correct].text}</div>`;
+  }
+  const notice = state.notice ? `<div class="quiz-status" role="status">${state.notice}</div>` : '';
+  const verified = state.verified ? quizVerificationMessage(question) : '';
+  const actions = state.checked
+    ? `<div class="quiz-actions"><button class="btn" type="button" onclick="verifyQuizInSimulation()">${quizVerificationButtonLabel()}</button><button class="btn" type="button" onclick="nextQuizQuestion()">${idx === bank.length-1 ? '처음 문제로' : '다음 문제'}</button><button class="btn" type="button" onclick="retryQuizQuestion()">다시 풀기</button></div>`
+    : `<div class="quiz-actions"><button class="btn" type="button" onclick="checkQuizAnswer()">결과 확인</button></div>`;
+  panel.innerHTML = `<section class="quiz-panel"><div class="quiz-head"><div class="quiz-title">먼저 예측하고 확인하기</div><span class="quiz-tag">${idx+1} / ${bank.length}</span></div><div class="quiz-question">${question.q}</div><div class="quiz-options">${options}</div>${actions}${notice}${feedback}${verified}<div class="quiz-muted">${quizVerificationHint()}</div></section>`;
+}
+function startQuiz() {
+  const state = getQuizState();
+  state.started = true; state.selected = null; state.checked = false; state.verified = false; state.notice = '';
+  renderQuizPanel();
+}
+function chooseQuizAnswer(index) {
+  const state = getQuizState(), question = QUIZ_BANK[mode][state.index];
+  if (state.checked || !Number.isInteger(index) || index < 0 || index >= question.options.length) return;
+  state.selected = index; state.notice = '';
+  renderQuizPanel();
+}
+function checkQuizAnswer() {
+  const state = getQuizState();
+  if (state.selected === null) {
+    state.notice = '먼저 보기 하나를 선택해 주세요. 선택하기 전에는 정답을 확인할 수 없어요.';
+    renderQuizPanel();
+    return;
+  }
+  state.checked = true; state.notice = ''; state.verified = false;
+  renderQuizPanel();
+}
+function retryQuizQuestion() {
+  const state = getQuizState();
+  state.selected = null; state.checked = false; state.verified = false; state.notice = '';
+  renderQuizPanel();
+}
+function nextQuizQuestion() {
+  const state = getQuizState(), bank = QUIZ_BANK[mode];
+  state.index = (state.index + 1) % bank.length;
+  state.selected = null; state.checked = false; state.verified = false; state.notice = '';
+  renderQuizPanel();
+}
+function verifyQuizInSimulation() {
+  const state = getQuizState();
+  if (!state.checked) return;
+  // 입자/회로 탭은 현재 설정 그대로 재생합니다. 밴드/다이오드 탭은
+  // 별도 재생 버튼이 없으므로 값을 자동 변경하지 않고 조작 방법만 안내합니다.
+  if (['drift', 'diff', 'both'].includes(mode)) {
+    paused = false;
+    if ($('pb')) $('pb').textContent = '⏸ 일시정지';
+  } else if (mode === 'rectify') {
+    rectifierPaused = false;
+    if ($('rectPause')) $('rectPause').textContent = '⏸ 일시정지';
+  }
+  state.verified = true; state.notice = '';
+  renderQuizPanel();
+  const target = mode === 'band' || mode === 'diode' ? $('ctrl') : c;
+  const canvasTop = target.getBoundingClientRect().top;
+  if (canvasTop < 0 || canvasTop > window.innerHeight * 0.35) target.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+function saveModeControls(m) {
+  const saved = Object.create(null), root = $('ctrl');
+  if (root) root.querySelectorAll('input[id], select[id]').forEach(el => {
+    saved[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+  });
+  if ($('SP')) saved.__SP = $('SP').value;
+  modeControlState[m] = saved;
+}
+function restoreModeControls(m) {
+  const saved = modeControlState[m];
+  if (!saved) return;
+  const root = $('ctrl');
+  if (root) root.querySelectorAll('input[id], select[id]').forEach(el => {
+    if (!(el.id in saved)) return;
+    if (el.type === 'checkbox') el.checked = !!saved[el.id];
+    else el.value = saved[el.id];
+  });
+  if (saved.__SP != null && $('SP')) $('SP').value = saved.__SP;
+}
+
+function setMode(m) {
+  if (mode) saveModeControls(mode);
+  mode = m;
+  if ($('particleLiveVisual')) $('particleLiveVisual').style.display = ['drift', 'diff', 'both'].includes(m) ? 'grid' : 'none';
+  for (const k of ['drift', 'diff', 'both', 'band', 'rectify', 'diode', ...THEORY_MODES]) $('t_' + k).className = k === m ? 'on' : '';
+
+  if (THEORY_MODES.includes(m)) {
+    $('c').style.display = 'none'; $('g').style.display = 'none'; $('meas').style.display = 'none';
+    $('theoryStage').style.display = 'block';
+    $('ctrl').innerHTML = THEORY_UI[m].ctrl;
+    restoreModeControls(m);
+    $('quizPanel').innerHTML = ''; $('quizPanel').style.display = 'none';
+    $('T').parentElement.style.display = 'none'; $('simOnly').style.display = 'none';
+    $('eq').style.display = 'none';
+    $('exp').style.display = ''; $('exp').innerHTML = THEORY_UI[m].exp;
+    $('note').style.display = ''; $('note').className = 'note theory-note'; $('note').innerHTML = THEORY_UI[m].note;
+    $('semiDetails').style.display = 'none';
+    updateTheoryControlLabels();
+    renderTheoryDetails();
+    return;
+  }
+
+  $('c').style.display = 'block'; $('meas').style.display = '';
+  $('theoryStage').style.display = 'none'; $('theoryDetails').style.display = 'none';
+  $('quizPanel').style.display = '';
+  const U = UI[m] || UI2[m], semi = SEMI_MODES.includes(m), rectifier = m === 'rectify', visualMode = semi || rectifier;
+  const targetCanvasHeight = rectifier ? RECTIFIER_CANVAS_HEIGHT : CFG.H;
+  if (c.width !== CFG.W) c.width = CFG.W;
+  if (c.height !== targetCanvasHeight) c.height = targetCanvasHeight;
+  $('ctrl').innerHTML = U.ctrl; restoreModeControls(m);
+  $('eq').innerHTML = U.eq; $('exp').innerHTML = U.exp; $('note').innerHTML = U.note;
+  renderQuizPanel();
+  $('simOnly').style.display = visualMode ? 'none' : '';
+  $('g').style.display = visualMode ? 'none' : 'block';
+  $('eq').style.display = visualMode ? 'none' : '';
+  $('exp').style.display = visualMode ? 'none' : '';
+  $('note').style.display = '';
+  $('note').className = visualMode ? 'note semi-note' : 'note';
+  $('meas').className = visualMode ? 'box meas semi-status' : 'box meas';
+  $('semiDetails').style.display = 'none';
+  if (semi) {
+    $('T').parentElement.style.display = m === 'band' ? '' : 'none';
+    if (m === 'diode') $('T').value = 5; // 다이오드 심화 탭은 상온(300 K) 고정
+    label(); semiInit(); semiLabel(); frame = 0; return;
+  }
+  if (rectifier) {
+    $('T').parentElement.style.display = 'none';
+    if (!rectifierInitialized) { resetRectifier(); rectifierInitialized = true; }
+    else {
+      updateRectifierLabels();
+      if ($('rectPause')) $('rectPause').textContent = rectifierPaused ? '▶ 재생' : '⏸ 일시정지';
+    }
+    return;
+  }
+  $('T').parentElement.style.display = '';
+  if (!modeControlState[m] || modeControlState[m].__SP == null) $('SP').value = String(CFG.SPEED[m]);
+  label(); reset();
+}
+function updateParticleUI() {
+  const ne = particleCounts.e, nh = particleCounts.h;
+  if ($('NeCount')) $('NeCount').value = String(ne);
+  if ($('NhCount')) $('NhCount').value = String(nh);
+  if ($('particleSummary')) $('particleSummary').textContent = `현재 설정: 전자 ${ne.toLocaleString('ko-KR')}개 · 정공 ${nh.toLocaleString('ko-KR')}개 · 합계 ${(ne + nh).toLocaleString('ko-KR')}개`;
+  if ($('electronBallCount')) $('electronBallCount').textContent = ne.toLocaleString('ko-KR');
+  if ($('holeBallCount')) $('holeBallCount').textContent = nh.toLocaleString('ko-KR');
+  if ($('particleLiveFoot')) $('particleLiveFoot').textContent = `현재 ${ne.toLocaleString('ko-KR')}개의 파란 전자 공과 ${nh.toLocaleString('ko-KR')}개의 빨간 정공 공이 왼쪽 시뮬레이션에 적용됩니다. (표본 수이며 실제 cm⁻³ 농도는 아닙니다.)`;
+  let insight;
+  if (ne === 0 && nh === 0) {
+    insight = '입자가 하나도 없어요. 입자 그림과 농도 막대가 비고, 이동·확산 측정값도 0으로 나타나요.';
+  } else if (ne === nh) {
+    insight = '전자와 정공의 표본 수가 같아요. 입자 수는 그래프와 전체 흐름 규모에 반영되고, 입자 하나의 이동 속도는 이동도·전기장·온도가 정해요.';
+  } else if (ne > nh) {
+    insight = '전자 표본이 더 많아요. 파란 입자와 전자 농도 막대가 더 많이 나타나며, 전자 전체 흐름 측정에도 더 많은 표본이 반영돼요.';
+  } else {
+    insight = '정공 표본이 더 많아요. 빨간 입자와 정공 농도 막대가 더 많이 나타나며, 정공 전체 흐름 측정에도 더 많은 표본이 반영돼요.';
+  }
+  if ($('particleInsight')) $('particleInsight').textContent = insight;
+}
+function applyParticleCountInput(id) {
+  const species = id === 'NeCount' ? 'e' : 'h';
+  const el = $(id);
+  if (!el) return;
+  const raw = String(el.value).trim();
+  if (raw === '') return; // 숫자를 다시 입력하는 동안 빈칸을 허용하고 change 때 복구합니다.
+  const parsed = Number(raw);
+  const safe = Number.isFinite(parsed) ? Math.round(parsed) : particleCounts[species];
+  const next = Math.max(0, Math.min(MAX_PARTICLES_PER_TYPE, safe));
+  el.value = String(next);
+  if (particleCounts[species] !== next) {
+    particleCounts[species] = next;
+    reset(); // 현재 입자 수 설정은 유지하고 입자만 새로 배치합니다.
+    const orb = $(species === 'e' ? 'electronOrb' : 'holeOrb');
+    if (orb) { orb.classList.remove('updated'); void orb.offsetWidth; orb.classList.add('updated'); }
+  } else {
+    updateParticleUI();
+  }
+}
+
+function label() {
+  const ph = phys(), E = val('E', 0);
+  if ($('Ev')) $('Ev').textContent = E > 0 ? '→ ' + E : E < 0 ? '← ' + (-E) : '0 (없음)';
+  if ($('Mv')) $('Mv').textContent = `μₙ = ${ph.mu.e.toFixed(2)}  (μₚ = ${ph.mu.h.toFixed(2)})`;
+  if ($('Gv')) $('Gv').textContent = val('G') === 0 ? '0% (농도 균일)' : val('G') === 100 ? '100% (한쪽만 농도가 높음)' : val('G') + '%';
+  $('Tv').textContent = `${ph.Tk} K` + (ph.Tk === 300 ? ' (상온)' : ph.Tk === 0 ? ' (이상적: 열운동 없음)' : '');
+  $('Dro').innerHTML = `확산계수 (자동 계산, D = μ·kT/q): <span class="e">Dₙ = ${ph.D.e.toFixed(2)}</span>, <span class="h">Dₚ = ${ph.D.h.toFixed(2)}</span> · kT/q = ${ph.VT.toFixed(2)}`;
+}
+// 모든 슬라이더·선택 상자의 변경을 한 곳에서 처리 (온도 슬라이더 표시 버그 해결)
+function onInput(ev) {
+  const id = ev.target.id;
+  if (THEORY_MODES.includes(mode)) {
+    updateTheoryControlLabels();
+    return;
+  }
+  if (id === 'NeCount' || id === 'NhCount') {
+    if (['drift', 'diff', 'both'].includes(mode)) applyParticleCountInput(id);
+    return;
+  }
+  label();
+  if (mode === 'rectify') { updateRectifierLabels(); return; }
+  if (SEMI_MODES.includes(mode)) { semiLabel(); return; }
+  if (['G', 'IC', 'IC3'].includes(id)) reset(); else updateScale();
+}
+document.addEventListener('input', onInput);
+document.addEventListener('change', ev => {
+  if (ev.target.tagName === 'SELECT') onInput(ev);
+  else if (ev.target.id === 'NeCount' || ev.target.id === 'NhCount') {
+    const id = ev.target.id;
+    if (!String(ev.target.value).trim()) ev.target.value = String(particleCounts[id === 'NeCount' ? 'e' : 'h']);
+    applyParticleCountInput(id);
+  }
+});
+function togglePause() { paused = !paused; $('pb').textContent = paused ? '▶ 재생' : '⏸ 일시정지'; }
+
+// ===================== 그리기 =====================
+function arrow(x0, y, dir, len) {
+  const d = dir * len / 2;
+  x.beginPath(); x.moveTo(x0 - d, y); x.lineTo(x0 + d, y); x.stroke();
+  x.beginPath(); x.moveTo(x0 + d, y); x.lineTo(x0 + d - dir * 8, y - 6); x.lineTo(x0 + d - dir * 8, y + 6); x.fill();
+}
+function fmt(v, n = 3) { return (v >= 0 ? '+' : '') + v.toFixed(n); }
+function draw() {
+  const ph = phys(), Es = val('E', 0), sE = $('showE').checked, sH = $('showH').checked;
+  x.clearRect(0, 0, W, H);
+  if (mode !== 'diff' && Es !== 0) {
+    x.strokeStyle = 'rgba(250,204,21,.22)'; x.fillStyle = 'rgba(250,204,21,.3)'; x.lineWidth = 2;
+    for (let y = 50; y < H; y += 70) for (let s = 60; s < W; s += 120) arrow(s, y, Math.sign(Es), 40);
+    x.fillStyle = '#facc15'; x.font = '15px Malgun Gothic';
+    x.fillText('전기장 E ' + (Es > 0 ? '→' : '←') + (mode === 'both' ? ' (외부에서 건 균일한 전기장)' : ''), 10, 18);
+  }
+  if (mode !== 'drift') { x.fillStyle = '#64748b'; x.fillRect(0, 0, 4, H); x.fillRect(W - 4, 0, 4, H);
+    x.strokeStyle = 'rgba(148,163,184,.35)'; x.setLineDash([4, 6]); x.beginPath(); x.moveTo(W / 2, 24); x.lineTo(W / 2, H); x.stroke(); x.setLineDash([]); }
+  for (const p of P) {
+    if ((p.t === 'e' && !sE) || (p.t === 'h' && !sH)) continue;
+    x.fillStyle = p.t === 'e' ? '#3b82f6' : '#ef4444';
+    x.beginPath(); x.arc(p.x, p.y, 2.6, 0, 7); x.fill();
+  }
+  x.fillStyle = '#94a3b8'; x.font = '13px Malgun Gothic';
+  x.fillText(`경과 시간: ${steps.toLocaleString()}`, W - 150, H - 8);
+
+  // ---- 농도 그래프 (세로 눈금 고정 + 시간 평균으로 잡음 감소) ----
+  const B = CFG.BINS, bw = W / B, top = 18, bot = 165, hh = bot - top;
+  for (const t of ['e', 'h']) { const now = binCounts(t); hist[t] = hist[t].map((v, i) => v + 0.25 * (now[i] - v)); }
+  gx.clearRect(0, 0, W, 190);
+  gx.strokeStyle = '#334155'; gx.beginPath(); gx.moveTo(0, bot + .5); gx.lineTo(W, bot + .5); gx.stroke();
+  for (let i = 0; i < B; i++) {
+    if (sE) { const h = Math.min(hist.e[i] / yMax, 1) * hh; gx.fillStyle = 'rgba(59,130,246,.75)'; gx.fillRect(i * bw + 1, bot - h, bw / 2 - 1, h); }
+    if (sH) { const h = Math.min(hist.h[i] / yMax, 1) * hh; gx.fillStyle = 'rgba(239,68,68,.75)'; gx.fillRect(i * bw + bw / 2, bot - h, bw / 2 - 1, h); }
+  }
+  if (mode === 'both') {                       // 이론 곡선 (점선)
+    gx.setLineDash([6, 4]); gx.lineWidth = 2;
+    for (const t of ['e', 'h']) {
+      if ((t === 'e' && !sE) || (t === 'h' && !sH)) continue;
+      const k = kOf(t); if (isNaN(k)) continue; gx.strokeStyle = t === 'e' ? '#93c5fd' : '#fca5a5'; gx.beginPath();
+      for (let i = 0; i < B; i++) { const y = bot - Math.min(particleCounts[t] * theoryFrac(k, i * bw, (i + 1) * bw) / yMax, 1) * hh;
+        i ? gx.lineTo(i * bw + bw / 2, y) : gx.moveTo(bw / 2, y); }
+      gx.stroke();
+    }
+    gx.setLineDash([]); gx.lineWidth = 1;
+  }
+  gx.fillStyle = '#94a3b8'; gx.font = '13px Malgun Gothic';
+  gx.fillText('위치 x에 따른 농도 (파랑: 전자 n(x), 빨강: 정공 p(x)' + (mode === 'both' ? ', 점선: 이론 볼츠만 분포' : '') + ') · 세로 눈금 고정', 8, 13);
+  gx.fillText('← 왼쪽', 4, 182); gx.fillText('오른쪽 →', W - 62, 182);
+
+  if (frame % 8 === 0) updateMeas(ph);
+}
+function updateMeas(ph) {
+  const E = field(); let s = '';
+  if (mode === 'drift') {
+    const te = -ph.mu.e * E, th = ph.mu.h * E;
+    const dir = v => Math.abs(v) < 0.02 ? '거의 0' : v > 0 ? '→' : '←';
+    const measuredE = particleCounts.e > 0 ? fmt(vMeas.e) : '측정 대상 없음 (전자 0개)';
+    const measuredH = particleCounts.h > 0 ? fmt(vMeas.h) : '측정 대상 없음 (정공 0개)';
+    const Je = particleCounts.e * (-vMeas.e), Jh = particleCounts.h * vMeas.h;
+    const Jsample = Je + Jh;
+    s = `<b>측정 vs 이론 — 평균 드리프트 속도 (px/시간단위)</b><br>
+<span class="e">전자</span>: 측정 ${measuredE} / 이론 −μₙE = ${fmt(te)} &nbsp; 입자 이동 ${particleCounts.e > 0 ? dir(vMeas.e) : '없음'} · 전류 기여 ${particleCounts.e > 0 ? dir(-vMeas.e) : '없음'}<br>
+<span class="h">정공</span>: 측정 ${measuredH} / 이론 +μₚE = ${fmt(th)} &nbsp; 입자 이동 ${particleCounts.h > 0 ? dir(vMeas.h) : '없음'} · 전류 기여 ${particleCounts.h > 0 ? dir(vMeas.h) : '없음'}<br>
+→ 전류 방향은 둘 다 <b>${E > 0 ? '오른쪽 → (E 방향)' : E < 0 ? '← 왼쪽 (E 방향)' : '없음'}</b><br>
+전류 기여 비교(표본 단위, q 생략): 전자 ${fmt(Je, 1)} · 정공 ${fmt(Jh, 1)} · 합계 ${fmt(Jsample, 1)}`;
+  } else {
+    const J = flux.h - flux.e;   // J ∝ q(Φp − Φn)
+    const d = v => Math.abs(v) < 3 ? '≈ 0' : v > 0 ? '→' : '←';
+    s = `<b>가운데 점선을 지나는 알짜 흐름 (입자 / 1000 시간단위, + 는 →)</b><br>
+<span class="e">전자 흐름 Φₙ</span> = ${fmt(flux.e, 1)} (${d(flux.e)}) → 전자 전류 Jₙ ∝ −Φₙ = ${fmt(-flux.e, 1)}<br>
+<span class="h">정공 흐름 Φₚ</span> = ${fmt(flux.h, 1)} (${d(flux.h)}) → 정공 전류 Jₚ ∝ +Φₚ = ${fmt(flux.h, 1)}<br>
+전체 전류 J = Jₙ + Jₚ ∝ ${fmt(J, 1)} (${d(J)})`;
+    if (mode === 'both') {
+      const bw = W / 5, ratio = (t) => { let L = 0, R = 0; P.forEach(p => { if (p.t === t) { if (p.x < bw) L++; else if (p.x > W - bw) R++; } }); return [L, R]; };
+      const out = t => {
+        if (particleCounts[t] === 0) return '입자 0개라 측정할 수 없음';
+        const k = kOf(t), [L, R] = ratio(t);
+        const ms = R === 0 ? (L === 0 ? '양쪽 모두 0개' : '오른쪽 0개') : (L / R).toFixed(2);
+        if (isNaN(k)) return `측정 ${ms} / 이론 정해지지 않음`;
+        const th = theoryFrac(k, 0, bw) / theoryFrac(k, W - bw, W);
+        const ts = !isFinite(th) ? '왼쪽에 몰림 (오른쪽 0에 가까움)' : th === 0 ? '오른쪽에 몰림 (왼쪽 0에 가까움)' : th > 1e4 ? th.toExponential(1) : th.toFixed(2);
+        return `측정 ${ms} / 이론 ${ts}`;
+      };
+      const lam = Math.abs(E) < 1e-12 ? (ph.VT === 0 ? '정해지지 않음 (E = 0, T = 0)' : '매우 큼 (E = 0)') : ph.VT === 0 ? '0 px (벽에 완전히 붙음)' : (ph.VT / Math.abs(E)).toFixed(0) + ' px';
+      const ratioV = ph.VT === 0 ? (E === 0 ? '정해지지 않음' : '매우 큼 (0 K 극한)') : (E * W / ph.VT).toFixed(2);
+      s += `<br><b>평형 확인</b> — 상자 양끝 전위차 qEW/kT = ${ratioV}, 특성 길이 λ = kT/(qE) = ${lam} (전자·정공 같음)<br>
+왼쪽 1/5 대 오른쪽 1/5 개수 비 — <span class="e">전자</span>: ${out('e')} · <span class="h">정공</span>: ${out('h')}<br>
+<span style="color:#94a3b8">평형에 도달하면 Φₙ ≈ 0, Φₚ ≈ 0이 각각 성립하고, 측정 비율이 이론 비율에 가까워져요(입자 수가 유한해서 오차가 조금 있어요).</span>`;
+    }
+  }
+  const countLine = `<div style="font-size:12px;color:#94a3b8;margin-bottom:5px">설정된 표본: <span class="e">전자 ${particleCounts.e.toLocaleString('ko-KR')}개</span> · <span class="h">정공 ${particleCounts.h.toLocaleString('ko-KR')}개</span></div>`;
+  $('meas').innerHTML = statusLine(ph, E) + countLine + s;
+}
+function statusLine(ph, E) {        // 0 K, μ = 0 같은 이상적 조건일 때 안내
+  const L = [];
+  if (ph.mu.e === 0) L.push('🛑 <b>μ = 0</b> → 아인슈타인 관계 D = μ·kT/q에 따라 <b>D도 0</b>이에요. 전기장에도, 농도 차이에도 반응하지 않아서 입자가 <b>전혀 움직이지 않아요</b>(드리프트 없음 + 확산 없음).' + (mode === 'both' ? ' 이론 평형 분포(점선)는 μ와 상관없지만, 평형까지 걸리는 시간이 무한대가 돼요.' : ''));
+  else if (ph.Tk === 0) {
+    if (mode === 'drift') L.push('🧊 <b>0 K (이상적 모드)</b>: 열운동이 없어서 D = 0이에요. 지그재그 없이 <b>순수 드리프트</b>만 보여요. 입자가 모두 정확히 μE 속도로 직선 운동해요.');
+    if (mode === 'diff') L.push('🧊 <b>0 K (이상적 모드)</b>: 확산의 원인인 열운동이 없어서 D = 0이에요. 농도 차이가 있어도 <b>확산이 전혀 일어나지 않아요</b>. 확산은 오직 열운동에서 나온다는 증거예요.');
+    if (mode === 'both') L.push('🧊 <b>0 K (이상적 모드)</b>: 드리프트를 되돌려 보낼 확산이 없어요. 그래서 전자는 왼쪽 벽, 정공은 오른쪽 벽에 <b>완전히 달라붙어요</b>(λ = kT/qE = 0).' + (E === 0 ? ' E = 0이면 아무 힘도 없어서 입자가 처음 자리에 그대로 멈춰 있어요.' : ''));
+  }
+  return L.length ? `<div style="color:#fcd34d;margin-bottom:6px">${L.join('<br>')}</div>` : '';
+}
+
+// ===================== ④ 에너지 밴드 · ⑥ PN 다이오드 심화 (실제 물리 단위) =====================
+const kB = 8.617e-5, QE = 1.602e-19, EPS0 = 8.854e-14;   // eV/K, C, F/cm
+// 300 K 물성값: Neamen 교재 표 기준 / Eg(T): Varshni 식 (Thurmond 계수)
+const MAT = {
+  Si:   {name: '실리콘(Si)',    Eg0: 1.170,  a: 4.73e-4,  b: 636, Nc: 2.8e19,  Nv: 1.04e19, er: 11.7, mun: 1350, mup: 480,  Ed: 0.045,  Ea: 0.045},
+  Ge:   {name: '저마늄(Ge)',    Eg0: 0.7437, a: 4.774e-4, b: 235, Nc: 1.04e19, Nv: 6.0e18,  er: 16.0, mun: 3900, mup: 1900, Ed: 0.012,  Ea: 0.010},
+  GaAs: {name: '갈륨비소(GaAs)', Eg0: 1.519,  a: 5.405e-4, b: 204, Nc: 4.7e17,  Nv: 7.0e18,  er: 13.1, mun: 8500, mup: 400,  Ed: 0.0058, Ea: 0.026}
+};
+const SEMI_MODES = ['band', 'diode'];
+const RECTIFIER_CANVAS_HEIGHT = 620; // ⑤ 회로 아래 네 파형을 넉넉하게 표시
+function TK() { return val('T', 5) * 60; }
+function matName() { return $('MAT') ? $('MAT').value : 'Si'; }
+function matP(name, T) {                      // T = 0 K 는 1 K 극한으로 계산
+  const M = MAT[name], Tt = Math.max(T, 1);
+  const Eg = M.Eg0 - M.a * Tt * Tt / (Tt + M.b);
+  const s = Math.pow(Tt / 300, 1.5), Nc = M.Nc * s, Nv = M.Nv * s, kT = kB * Tt;
+  const lnni = 0.5 * Math.log(Nc * Nv) - Eg / (2 * kT);
+  return {...M, Eg, Nc, Nv, kT, lnni, ni: Math.exp(lnni), T: Tt};
+}
+function lse(a, b) { const m = Math.max(a, b); return m === -Infinity ? -Infinity : m + Math.log(Math.exp(a - m) + Math.exp(b - m)); }
+function softplus(z) { return z > 35 ? z : Math.log1p(Math.exp(z)); }
+// 전하 중성 조건 p + N_D⁺ = n + N_A⁻ 를 만족하는 E_F 찾기 (Ev = 0 기준, eV). 부분 이온화 포함, 볼츠만 근사. 로그 공간에서 계산
+function solveEF(mp, ND, NA) {
+  const {Eg, Nc, Nv, kT} = mp, Ec = Eg, Ed = Eg - mp.Ed, Ea = mp.Ea;
+  const lnN = EF => Math.log(Nc) - (Ec - EF) / kT;
+  const lnP = EF => Math.log(Nv) - EF / kT;
+  const lnDp = EF => ND > 0 ? Math.log(ND) - softplus(Math.LN2 + (EF - Ed) / kT) : -Infinity;      // N_D⁺ = N_D/(1+2e^{(EF−Ed)/kT})
+  const lnAm = EF => NA > 0 ? Math.log(NA) - softplus(2 * Math.LN2 + (Ea - EF) / kT) : -Infinity;  // N_A⁻ = N_A/(1+4e^{(Ea−EF)/kT})
+  const res = EF => lse(lnP(EF), lnDp(EF)) - lse(lnN(EF), lnAm(EF));
+  let lo = -0.5, hi = Eg + 0.5;
+  for (let i = 0; i < 200; i++) { const mid = (lo + hi) / 2; if (res(mid) > 0) lo = mid; else hi = mid; }
+  const EF = (lo + hi) / 2;
+  return {EF, lnn: lnN(EF), lnp: lnP(EF), lnDp: lnDp(EF), lnAm: lnAm(EF), Ec, Ed, Ea};
+}
+const SUP = {'-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹'};
+function sup(n) { return String(n).split('').map(ch => SUP[ch]).join(''); }
+function sciLn(lnv, d = 2) {                  // 자연로그 값으로 받아 지수 표기 (아주 작은 값도 표시 가능)
+  if (lnv === -Infinity || isNaN(lnv)) return '0';
+  let e10 = lnv / Math.LN10, e = Math.floor(e10 + 1e-9), m = Math.pow(10, e10 - e);
+  if (m >= 9.95) { m /= 10; e++; }
+  if (e >= -2 && e <= 2) { const t = (m * Math.pow(10, e)).toPrecision(d + 1); return t.includes('.') ? t.replace(/\.?0+$/, '') : t; }
+  return m.toFixed(d - 1) + '×10' + sup(e);
+}
+function line(a, b, c2, d) { x.beginPath(); x.moveTo(a, b); x.lineTo(c2, d); x.stroke(); }
+let semiDots = null;
+function semiInit() {
+  semiDots = {e: [], h: [], de: [], dh: []};
+  for (let i = 0; i < 200; i++) for (const k of ['e', 'h', 'de', 'dh']) semiDots[k].push({u: Math.random(), v: Math.random()});
+  semiDots.order = [...Array(14).keys()].sort(() => Math.random() - 0.5);
+  semiLabel();
+}
+function semiLabel() {
+  if ($('Tv')) $('Tv').textContent = mode === 'band' && TK() === 0 ? '0 K 표시 (계산은 1 K 근사)' : `${TK()} K` + (TK() === 300 ? ' (상온)' : TK() === 0 ? ' (열운동 없음)' : '');
+  if ($('VBv')) {
+    const Vr = diodeVoltage();
+    $('VBv').textContent = `${Vr > 0 ? '+' : ''}${Vr.toFixed(2)} V`;
+  }
+  syncChoiceButtons();
+  updateSemiDetails();
+}
+function setSemiOption(id, value) {
+  const el = $(id); if (!el) return;
+  el.value = value;
+  semiLabel();
+}
+function syncChoiceButtons() {
+  for (const b of document.querySelectorAll('[data-choice]')) {
+    const [id, value] = b.dataset.choice.split(':');
+    b.classList.toggle('active', !!$(id) && $(id).value === value);
+  }
+}
+function toggleSemiDetails() {
+  const el = $('semiDetails'), btn = $('detailToggle');
+  const show = el.style.display === 'none' || !el.style.display;
+  el.style.display = show ? 'block' : 'none';
+  if (btn) btn.textContent = show ? '자세히 보기 닫기' : '자세히 보기';
+  updateSemiDetails();
+}
+function updateSemiDetails() {
+  const el = $('semiDetails'); if (!el || !SEMI_MODES.includes(mode)) return;
+  if (mode === 'band') {
+    const st = bandState();
+    el.innerHTML = `<b>에너지 밴드 자세히 보기</b><br>재료: ${st.mp.name}<br>밴드갭 E<sub>g</sub>: ${st.mp.Eg.toFixed(3)} eV<br>페르미 준위 E<sub>F</sub>: ${st.EF.toFixed(3)} eV (Ev 기준)<br>진성 캐리어 농도 n<sub>i</sub>: ${sciLn(st.mp.lnni)} cm⁻³<br>전자 n: ${sciLn(st.lnn)} cm⁻³ · 정공 p: ${sciLn(st.lnp)} cm⁻³<br>${st.typ !== 'i' ? `도펀트 이온화율: ${(st.ion * 100).toFixed(1)} %<br>` : ''}※ 공의 개수는 실제 농도를 그대로 그린 것이 아니라, 농도에 따른 변화를 로그 스케일로 단순화한 표현입니다.`;
+  } else {
+    const st = diodeState();
+    el.innerHTML = `<b>PN 다이오드 자세히 보기</b><br>내부 전위 V<sub>bi</sub>: ${st.Vbi.toFixed(3)} V<br>공핍층 폭 W: ${(st.Wd * 1e4).toPrecision(3)} µm<br>회로 공급 전압 V<sub>S</sub>: ${st.Vsource.toFixed(2)} V<br>다이오드 접합 전압 V<sub>D</sub>: ${st.V.toFixed(3)} V<br>전구 등가 저항 전압: ${st.Vload.toFixed(3)} V<br>회로 전류 I: ${formatCurrent(st.I)}<br>전류 밀도 J: ${formatCurrentDensity(st.J)}<br>※ 접합 면적 ${st.area.toExponential(1)} cm²와 전구 등가 저항 ${st.loadR} Ω을 가정한 교육용 모델입니다. 실제 전구 필라멘트의 온도에 따른 저항 변화는 생략했습니다.`;
+  }
+}
+function moveDot(d, jit) {
+  d.u = (d.u + (Math.random() - 0.5) * jit + 1) % 1;
+  d.v = Math.min(1, Math.max(0, d.v + (Math.random() - 0.5) * jit * 2));
+}
+function moveDotWithDrift(d, jit, direction, driftSpeed) {
+  // 무작위 열운동 위에 바이어스가 만드는 평균 이동 방향을 더합니다.
+  d.u = (d.u + (Math.random() - 0.5) * jit + direction * driftSpeed + 1) % 1;
+  d.v = Math.min(1, Math.max(0, d.v + (Math.random() - 0.5) * jit * 2));
+}
+function dot(px, py, col, r = 2.6) { x.fillStyle = col; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill(); }
+
+// ---------- ④ 에너지 밴드 ----------
+function bandState() {
+  const T = TK(), m = matName(), mp = matP(m, T), typ = $('DOP') ? $('DOP').value : 'n';
+  const N = Math.pow(10, val('NL', 16)), ND = typ === 'n' ? N : 0, NA = typ === 'p' ? N : 0;
+  const s = solveEF(mp, ND, NA);
+  const Ei = mp.Eg / 2 + mp.kT / 2 * Math.log(mp.Nv / mp.Nc);
+  const ion = typ === 'n' ? Math.exp(s.lnDp) / ND : typ === 'p' ? Math.exp(s.lnAm) / NA : 1;
+  return {T, T0: T === 0, m, mp, typ, N, ND, NA, ...s, Ei, ion};
+}
+function roundBox(px, py, w, h, r, fill, stroke) {
+  x.beginPath(); x.roundRect(px, py, w, h, r);
+  if (fill) { x.fillStyle = fill; x.fill(); }
+  if (stroke) { x.strokeStyle = stroke; x.lineWidth = 1.5; x.stroke(); }
+}
+function carrierDot(px, py, color, plus = false, radius = 5) {
+  x.beginPath(); x.fillStyle = color; x.arc(px, py, radius, 0, Math.PI * 2); x.fill();
+  if (plus) { x.fillStyle = '#fff'; x.font = 'bold 9px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('+', px, py + .3); x.textAlign = 'start'; x.textBaseline = 'alphabetic'; }
+}
+function carrierCount(ln) {
+  if (!isFinite(ln) || ln < -100) return 0;
+  const log10 = ln / Math.LN10;
+  return Math.max(0, Math.min(54, Math.round(4.5 * (log10 - 5))));
+}
+function drawBand() {
+  const st = bandState(), mp = st.mp, Eg = mp.Eg, jit = st.T0 ? 0 : 0.006;
+  const yV = 292, scale = 112, yC = yV - Eg * scale;
+  x.clearRect(0, 0, W, H);
+  x.fillStyle = '#111827'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#e2e8f0'; x.font = 'bold 19px Malgun Gothic'; x.fillText('에너지 밴드 = 전자가 머물 수 있는 건물 층', 24, 29);
+  x.fillStyle = '#94a3b8'; x.font = '12px Malgun Gothic'; x.fillText(st.T0 ? `${mp.name} · 0 K 표시 / 밴드 계산은 1 K 근사` : `${mp.name} · ${st.T} K`, 25, 49);
+
+  // 전도대와 가전자대: 두 개의 층 사이가 밴드갭입니다.
+  roundBox(75, yC - 47, 610, 47, 10, 'rgba(59,130,246,.22)', '#3b82f6');
+  roundBox(75, yV, 610, 54, 10, 'rgba(239,68,68,.20)', '#ef4444');
+  x.fillStyle = '#bfdbfe'; x.font = 'bold 16px Malgun Gothic'; x.fillText('위층 · 전도대 (Ec)', 92, yC - 19);
+  x.fillStyle = '#fecaca'; x.fillText('아래층 · 가전자대 (Ev)', 92, yV + 34);
+  x.fillStyle = '#94a3b8'; x.font = '13px Malgun Gothic';
+  x.fillText('빈 공간 · 밴드갭 (전자 상태가 없는 에너지 영역)', 95, (yC + yV) / 2 + 4);
+  x.strokeStyle = 'rgba(148,163,184,.45)'; x.setLineDash([4, 5]); line(80, yC, 685, yC); line(80, yV, 685, yV); x.setLineDash([]);
+
+  // 도너/억셉터 준위는 각각 전도대 아래, 가전자대 위에 계단처럼 표시합니다.
+  if (st.typ === 'n') {
+    const yd = yC + mp.Ed * scale;
+    x.strokeStyle = '#fb923c'; x.lineWidth = 3; line(490, yd, 650, yd); line(490, yd, 490, yd - 8); x.lineWidth = 1;
+    x.fillStyle = '#fdba74'; x.font = 'bold 12px Malgun Gothic'; x.fillText('도너 계단 Ed', 500, yd + 18);
+    if (st.T0) carrierDot(520, yd - 3, '#60a5fa', false, 4); // 0 K에서는 도너에 붙잡힌 전자
+  }
+  if (st.typ === 'p') {
+    const ya = yV - mp.Ea * scale;
+    x.strokeStyle = '#a78bfa'; x.lineWidth = 3; line(490, ya, 650, ya); line(490, ya, 490, ya + 8); x.lineWidth = 1;
+    x.fillStyle = '#c4b5fd'; x.font = 'bold 12px Malgun Gothic'; x.fillText('억셉터 계단 Ea', 500, ya - 10);
+  }
+
+  // 페르미 준위: 물높이처럼 초록 점선으로 표시합니다.
+  const yF = Math.max(66, Math.min(350, yV - st.EF * scale));
+  x.strokeStyle = '#34d399'; x.lineWidth = 2.5; x.setLineDash([9, 6]); line(75, yF, 685, yF); x.setLineDash([]); x.lineWidth = 1;
+  x.fillStyle = '#6ee7b7'; x.font = 'bold 13px Malgun Gothic'; x.fillText('E_F · 페르미 준위(물높이)', 500, yF - 8);
+
+  // 전도대 전자와 가전자대 정공: 농도에 따라 로그 스케일로 개수를 바꿉니다.
+  const ne = carrierCount(st.lnn), nh = carrierCount(st.lnp);
+  for (let i = 0; i < ne; i++) {
+    const d = semiDots.e[i]; moveDot(d, jit);
+    carrierDot(100 + d.u * 560, yC - 8 - d.v * 30, '#3b82f6', false, 4.2);
+  }
+  for (let i = 0; i < nh; i++) {
+    const d = semiDots.h[i]; moveDot(d, jit);
+    carrierDot(100 + d.u * 560, yV + 10 + d.v * 34, '#ef4444', true, 4.5);
+  }
+
+  // 열에 의한 여기: 온도가 0 K가 아니고 진성 캐리어가 충분할 때만 점프 장면을 표시합니다.
+  const pairs = st.T0 ? 0 : Math.min(4, Math.floor(carrierCount(mp.lnni) / 12));
+  for (let i = 0; i < pairs; i++) {
+    const px = 190 + i * 125, phase = (frame * 0.035 + i * 0.27) % 1;
+    const py = yV - 8 - phase * Math.max(18, yV - yC - 25);
+    x.strokeStyle = 'rgba(250,204,21,.65)'; x.lineWidth = 1.5; x.setLineDash([3, 4]); line(px, yV - 5, px, yC + 3); x.setLineDash([]);
+    x.fillStyle = '#facc15'; x.beginPath(); x.moveTo(px - 4, yC + 13); x.lineTo(px, yC + 5); x.lineTo(px + 4, yC + 13); x.fill();
+    carrierDot(px, py, '#3b82f6', false, 4.5);
+    carrierDot(px, yV + 15, '#ef4444', true, 4.5);
+  }
+  if (st.T0) {
+    x.fillStyle = '#fcd34d'; x.font = 'bold 13px Malgun Gothic'; x.fillText('0 K · 열에너지가 없어 전자가 점프하지 않습니다', 90, 370);
+  } else {
+    x.fillStyle = '#94a3b8'; x.font = '12px Malgun Gothic'; x.fillText('온도가 올라가면 전자가 위층으로 여기되고, 아래층에는 정공(+)이 남습니다', 90, 370);
+  }
+  x.fillStyle = '#93c5fd'; x.font = '12px Malgun Gothic'; x.fillText('● 전자', 24, 88);
+  x.fillStyle = '#fca5a5'; x.fillText('● 정공(+)', 24, 105);
+}
+
+function measBand() {
+  const st = bandState();
+  if (st.T0) return '화면은 0 K 모드이지만, 0 K를 그대로 넣으면 일부 식에서 0으로 나누게 되므로 밴드·페르미 준위 계산은 1 K 근사값을 사용합니다. 열에 의한 전자 점프는 시각화에서 꺼 둔 상태예요.';
+  if (st.typ === 'n') return 'n형 반도체: 도너가 전자를 내놓기 쉬워지고, 페르미 준위(E_F)가 위쪽으로 이동해요.';
+  if (st.typ === 'p') return 'p형 반도체: 억셉터가 정공을 만들기 쉬워지고, 페르미 준위(E_F)가 아래쪽으로 이동해요.';
+  return '진성 반도체: 온도가 올라갈수록 전자가 위층으로 여기되고 전자와 정공이 함께 늘어나요.';
+}
+const DIODE_LOAD_R = 100;       // 전구를 대신하는 교육용 등가 저항(Ω)
+const DIODE_AREA_CM2 = 1e-4;   // 예시 접합 면적(cm²)
+function diodeVoltage() {
+  // 슬라이더 -100~+100을 회로 공급 전압 -5~+5 V로 선형 대응
+  return val('VB', 0) * 0.05;
+}
+function currentDensityFromJs(lnJs, Vt, v) {
+  if (v === 0) return 0;
+  const z = v / Vt;
+  const lnAbs = lnJs + (Math.abs(z) > 30 ? (z > 0 ? z : 0) : Math.log(Math.abs(Math.expm1(z))));
+  // 현재 전압 범위에서는 이 상한에 도달하지 않지만, 계산 예외를 방지합니다.
+  return Math.sign(v) * Math.exp(Math.min(700, lnAbs));
+}
+function solveJunctionVoltage(Vs, lnJs, Vt) {
+  // Vs = Vd + I·R, I = J(Vd)·A 를 이분법으로 풉니다.
+  if (Vs === 0) return 0;
+  let lo = Math.min(0, Vs), hi = Math.max(0, Vs);
+  for (let i = 0; i < 72; i++) {
+    const mid = (lo + hi) / 2;
+    const Jmid = currentDensityFromJs(lnJs, Vt, mid);
+    const residual = mid + Jmid * DIODE_AREA_CM2 * DIODE_LOAD_R - Vs;
+    if (residual > 0) hi = mid; else lo = mid;
+  }
+  return (lo + hi) / 2;
+}
+function diodeState() {
+  const T = TK(), m = matName(), mp = matP(m, T), Vt = mp.kT;
+  const NA = Math.pow(10, val('NAL', 16)), ND = Math.pow(10, val('NDL', 16)), ni = mp.ni;
+  const nn0 = ND / 2 + Math.sqrt(ND * ND / 4 + ni * ni), pp0 = NA / 2 + Math.sqrt(NA * NA / 4 + ni * ni);
+  const Vbi = Vt * (Math.log(nn0) + Math.log(pp0) - 2 * mp.lnni);
+  const Vsource = diodeVoltage(), Vmax = Vbi - Math.min(0.05, 0.5 * Vbi);
+  const eps = mp.er * EPS0;
+  const Dn = mp.mun * Vt, Dp = mp.mup * Vt, tau = 1e-6, Ln = Math.sqrt(Dn * tau), Lp = Math.sqrt(Dp * tau);
+  const lnJsn = Math.log(QE) + 2 * mp.lnni + Math.log(Dn / (Ln * pp0)), lnJsp = Math.log(QE) + 2 * mp.lnni + Math.log(Dp / (Lp * nn0));
+  const lnJs = lse(lnJsn, lnJsp);
+  // 회로 공급 전압은 전구 등가 저항과 PN 접합에 나뉘어 걸립니다.
+  const V = solveJunctionVoltage(Vsource, lnJs, Vt); // PN 접합 양단 전압
+  const Vdep = Math.min(V, Vmax);                    // 공핍 근사가 무너지는 순방향 영역은 그림 계산에서만 제한
+  const Wf = v => Math.sqrt(Math.max(0, 2 * eps * (Vbi - v) / QE * (1 / NA + 1 / ND)));
+  const Wd = Wf(Vdep), xn = Wd * NA / (NA + ND), xp = Wd * ND / (NA + ND), WM = Wf(-5);
+  const J = currentDensityFromJs(lnJs, Vt, V), I = J * DIODE_AREA_CM2;
+  const VmaxJ = solveJunctionVoltage(5, lnJs, Vt), Imax = Math.max(1e-15, currentDensityFromJs(lnJs, Vt, VmaxJ) * DIODE_AREA_CM2);
+  return {T, T0: T === 0, m, mp, Vt, NA, ND, nn0, pp0, Vbi, Vreq: Vsource, Vsource, Vmax, V, Vdep, eps, Wd, xn, xp,
+          xnM: WM * NA / (NA + ND), xpM: WM * ND / (NA + ND), Emax: QE * ND * xn / eps, lnJs, lnJsn, lnJsp, Ln, Lp, WM, J, I, Imax,
+          area: DIODE_AREA_CM2, loadR: DIODE_LOAD_R, Vload: I * DIODE_LOAD_R};
+}
+function lnAbsJ(st, v) { const z = v / st.Vt; return st.lnJs + (Math.abs(z) > 30 ? (z > 0 ? z : 0) : Math.log(Math.abs(Math.expm1(z)))); }
+function Jof(st, v) { return Math.sign(v) * Math.exp(Math.min(700, lnAbsJ(st, v))); }
+function pointOnPath(points, t) {
+  const lengths = []; let total = 0;
+  for (let i = 0; i < points.length - 1; i++) { const dx = points[i+1][0]-points[i][0], dy = points[i+1][1]-points[i][1], len = Math.hypot(dx,dy); lengths.push(len); total += len; }
+  let d = ((t % 1) + 1) % 1 * total;
+  for (let i = 0; i < lengths.length; i++) {
+    if (d <= lengths[i]) { const a = d / lengths[i]; return [points[i][0] + (points[i+1][0]-points[i][0])*a, points[i][1] + (points[i+1][1]-points[i][1])*a]; }
+    d -= lengths[i];
+  }
+  return points[points.length-1];
+}
+function drawDiode() {
+  const st = diodeState(), V = st.Vsource, Vj = st.V, Vdep = st.Vdep;
+  x.clearRect(0, 0, W, H); x.fillStyle = '#111827'; x.fillRect(0, 0, W, H);
+  const currentDensity = st.J, circuitCurrent = st.I;
+  // 5 V 공급에서의 모델 전류를 기준으로, 전류가 늘수록 전구가 서서히 밝아집니다.
+  const currentRatio = Math.max(0, Math.min(1, circuitCurrent / st.Imax));
+  const light = V > 0 ? Math.pow(currentRatio, 0.7) : 0;
+  const electronSpeed = V > 0 ? (light > 0 ? 0.001 + light * 0.018 : 0.00005) : V < 0 ? -0.00004 : 0;
+  const glow = 3 + 52 * light;
+  const voltageText = `${V > 0 ? '+' : ''}${V.toFixed(2)} V`;
+
+  x.fillStyle = '#e2e8f0'; x.font = 'bold 18px Malgun Gothic'; x.fillText('PN 다이오드 · 전압을 바꾸면 장벽과 전구가 달라져요', 20, 27);
+  x.fillStyle = V > 0 ? '#fbbf24' : V < 0 ? '#93c5fd' : '#cbd5e1'; x.font = 'bold 15px Malgun Gothic'; x.fillText(`공급 전압 ${voltageText} · ${V > 0 ? '순방향' : V < 0 ? '역방향' : '평형'}`, 22, 49);
+
+  // 바깥 회로: 배터리와 전구가 다이오드에 직렬로 연결되어 있습니다.
+  x.strokeStyle = '#94a3b8'; x.lineWidth = 4; x.lineCap = 'round';
+  line(200, 82, 260, 82); line(300, 82, 345, 82);
+  // 전구의 전류를 제한하는 100 Ω 등가 저항을 회로에 함께 표시합니다.
+  x.beginPath(); x.moveTo(345,82); x.lineTo(354,72); x.lineTo(366,92); x.lineTo(378,72); x.lineTo(390,92); x.lineTo(402,72); x.lineTo(414,82); x.stroke();
+  line(414, 82, 470, 82); line(530, 82, 560, 82);
+  line(200, 82, 200, 194); line(560, 82, 560, 194);
+  x.lineWidth = 1; x.lineCap = 'butt';
+  x.fillStyle = '#cbd5e1'; x.font = '10px Malgun Gothic'; x.fillText('전구 등가 저항 100 Ω', 344, 62);
+  // 배터리 극성은 P쪽이 +인 순방향에서 왼쪽 +로 표시합니다.
+  const forward = V >= 0;
+  x.strokeStyle = '#f8fafc'; x.lineWidth = 3;
+  line(forward ? 270 : 290, 62, forward ? 270 : 290, 102);
+  line(forward ? 290 : 270, 70, forward ? 290 : 270, 94);
+  x.lineWidth = 1; x.fillStyle = '#f8fafc'; x.font = 'bold 13px sans-serif';
+  x.fillText(forward ? '+' : '−', 252, 58); x.fillText(forward ? '−' : '+', 294, 58);
+  x.fillStyle = '#94a3b8'; x.font = '11px Malgun Gothic'; x.fillText('전지', 263, 119);
+
+  // 전구의 빛 번짐은 계산된 전류에 따라 커집니다.
+  x.save(); x.shadowColor = `rgba(250,204,21,${0.04 + light * 0.9})`; x.shadowBlur = glow;
+  x.beginPath(); x.arc(500, 82, 22, 0, Math.PI * 2); x.fillStyle = `rgba(250,204,21,${0.015 + light * 0.82})`; x.fill(); x.restore();
+  x.strokeStyle = light > 0.015 ? '#fde68a' : '#94a3b8'; x.lineWidth = 2; x.beginPath(); x.arc(500, 82, 22, 0, Math.PI * 2); x.stroke();
+  x.strokeStyle = light > 0.015 ? '#fef08a' : '#64748b'; x.lineWidth = 3; line(488, 70, 512, 94); line(512, 70, 488, 94); x.lineWidth = 1;
+  x.fillStyle = '#cbd5e1'; x.font = '12px Malgun Gothic'; x.fillText(light > 0.55 ? '전구 밝게 켜짐' : light > 0.015 ? '전구 희미하게 켜짐' : '전구 거의 꺼짐', 464, 119);
+
+  // P형과 N형 반도체 블록, 가운데의 움직이지 않는 공간전하.
+  const cx = 380, pL = 120, nR = 640, blockTop = 165, blockBottom = 257;
+  const ratio = Math.sqrt(Math.max(0, Math.min(1, (st.Vbi - Vdep) / (st.Vbi + 5))));
+  const targetDepletionW = 22 + 130 * ratio;
+  // 슬라이더를 움직일 때 공핍층 경계가 한 프레임에 튀지 않고 부드럽게 이동합니다.
+  if (!Number.isFinite(semiDots.depletionW)) semiDots.depletionW = targetDepletionW;
+  semiDots.depletionW += (targetDepletionW - semiDots.depletionW) * 0.10;
+  const depletionW = semiDots.depletionW, xL = cx - depletionW / 2, xR = cx + depletionW / 2;
+  roundBox(pL, blockTop, cx-pL, blockBottom-blockTop, 9, 'rgba(239,68,68,.22)', '#ef4444');
+  roundBox(cx, blockTop, nR-cx, blockBottom-blockTop, 9, 'rgba(59,130,246,.22)', '#3b82f6');
+  x.fillStyle = '#fca5a5'; x.font = 'bold 18px Malgun Gothic'; x.fillText('P형', 145, 190);
+  x.fillStyle = '#93c5fd'; x.fillText('N형', 590, 190);
+  x.fillStyle = 'rgba(250,204,21,.14)'; x.fillRect(xL, blockTop, depletionW, blockBottom-blockTop);
+  x.strokeStyle = 'rgba(250,204,21,.75)'; x.setLineDash([4,4]); line(xL, blockTop, xL, blockBottom); line(xR, blockTop, xR, blockBottom); x.setLineDash([]);
+  // P쪽 고정 억셉터 이온(−), N쪽 고정 도너 이온(+)
+  const ionN = Math.max(1, Math.floor(depletionW / 20));
+  for (let i = 0; i < ionN; i++) {
+    const yy = 207 + (i % 2) * 24, frac = (i + 0.5) / ionN;
+    x.fillStyle = '#c4b5fd'; x.font = 'bold 15px sans-serif'; x.fillText('⊖', xL + (cx-xL)*frac - 6, yy);
+    x.fillStyle = '#fdba74'; x.fillText('⊕', cx + (xR-cx)*frac - 6, yy);
+  }
+  x.fillStyle = '#fcd34d'; x.font = 'bold 12px Malgun Gothic'; x.fillText('공핍층', Math.max(pL+8, xL), 151);
+  x.fillStyle = '#94a3b8'; x.font = '11px Malgun Gothic'; x.fillText('고정 이온', cx-28, 275);
+
+  // 역방향에서는 정공이 P쪽 바깥(왼쪽), 전자가 N쪽 바깥(오른쪽)으로 밀립니다.
+  // 순방향에서는 두 다수 캐리어가 접합부를 향해 이동합니다.
+  const driftSpeed = Math.min(0.028, Math.abs(V) * 0.0045);
+  const holeDirection = V < 0 ? -1 : V > 0 ? 1 : 0;   // P영역 u 증가 = 접합부 방향
+  const electronDirection = V < 0 ? 1 : V > 0 ? -1 : 0; // N영역 u 증가 = 바깥쪽 방향
+  for (let i = 0; i < 11; i++) {
+    const a = semiDots.dh[i]; moveDotWithDrift(a, 0.0018, holeDirection, driftSpeed);
+    carrierDot(145 + a.u * Math.max(15, xL-160), 205 + a.v * 38, '#ef4444', true, 4.8);
+    const b = semiDots.de[i]; moveDotWithDrift(b, 0.0018, electronDirection, driftSpeed);
+    carrierDot(xR + 12 + b.u * Math.max(10, 625-xR), 205 + b.v * 38, '#3b82f6', false, 4.8);
+  }
+  // 외부 바이어스에 의한 다수 캐리어 이동 방향을 화살표로 함께 표시합니다.
+  x.strokeStyle = '#facc15'; x.fillStyle = '#facc15'; x.lineWidth = 2;
+  if (V < 0) {
+    arrow(250, 236, -1, 42); arrow(510, 236, 1, 42);
+    x.font = 'bold 11px Malgun Gothic'; x.fillText('정공 ←', 218, 286); x.fillText('전자 →', 490, 286);
+  } else if (V > 0) {
+    arrow(250, 236, 1, 42); arrow(510, 236, -1, 42);
+    x.font = 'bold 11px Malgun Gothic'; x.fillText('정공 → 접합부', 202, 286); x.fillText('접합부 ← 전자', 465, 286);
+  } else {
+    x.font = '11px Malgun Gothic'; x.fillText('전압이 없을 때: 열운동으로 무작위 이동', 247, 286);
+  }
+  // 내부 전기장의 방향은 N쪽에서 P쪽입니다.
+  x.strokeStyle = '#facc15'; x.fillStyle = '#facc15'; x.lineWidth = 2; arrow(cx+28, 240, -1, 42); x.lineWidth = 1;
+  x.font = '11px Malgun Gothic'; x.fillText('내부 전기장 N → P', cx+45, 244);
+
+  // 전선 위의 파란 전자 공: Shockley 전류가 클수록 더 빠르게 움직입니다.
+  const wirePath = [[300,82],[560,82],[560,210],[200,210],[200,82],[260,82]];
+  if (electronSpeed !== 0) {
+    for (let i = 0; i < 7; i++) {
+      const t = (i / 7 + frame * electronSpeed) % 1, [px,py] = pointOnPath(wirePath,t);
+      carrierDot(px, py, '#60a5fa', false, 3.2);
+    }
+  }
+
+  // 아래쪽에는 밴드 그래프 대신 하나의 언덕만 보여 줍니다.
+  const barrier = Math.max(0.015, st.Vbi - Vdep);
+  const hillH = 10 + 42 * Math.max(0, Math.min(1, barrier / (st.Vbi + 1)));
+  const baseY = 352, peakY = baseY - hillH;
+  x.fillStyle = '#94a3b8'; x.font = '12px Malgun Gothic'; x.fillText(`전자 이동 장벽 · 접합 전압 ${Vj.toFixed(2)} V`, 24, 309);
+  x.beginPath(); x.moveTo(190, baseY); x.bezierCurveTo(270, baseY, 290, peakY, 380, peakY); x.bezierCurveTo(470, peakY, 490, baseY, 570, baseY); x.lineTo(570, baseY+5); x.lineTo(190, baseY+5); x.closePath();
+  const grad = x.createLinearGradient(0, peakY, 0, baseY); grad.addColorStop(0, 'rgba(250,204,21,.40)'); grad.addColorStop(1, 'rgba(250,204,21,.05)'); x.fillStyle = grad; x.fill();
+  x.strokeStyle = '#facc15'; x.lineWidth = 3; x.beginPath(); x.moveTo(190, baseY); x.bezierCurveTo(270, baseY, 290, peakY, 380, peakY); x.bezierCurveTo(470, peakY, 490, baseY, 570, baseY); x.stroke(); x.lineWidth = 1;
+  x.fillStyle = '#93c5fd'; x.font = '11px Malgun Gothic'; x.fillText('N쪽 전자', 515, 337);
+  x.fillStyle = '#fca5a5'; x.fillText('P쪽', 200, 337);
+  if (V > 0 && light > 0.02) {
+    const travel = Math.max(0.04, light * 0.18);
+    for (let i = 0; i < 4; i++) {
+      const t = (frame * travel / 60 + i * 0.25) % 1, px = 545 - t * 300;
+      const yy = baseY - (hillH * Math.exp(-Math.pow((px-380)/76,2))) - 7;
+      carrierDot(px, yy, '#3b82f6', false, 5);
+    }
+  } else {
+    carrierDot(535, baseY-9, '#3b82f6', false, 5);
+  }
+  x.fillStyle = '#cbd5e1'; x.font = '11px Malgun Gothic';
+  x.fillText(V > 0 ? '순방향: 접합 장벽이 낮아져 캐리어가 접합부로 접근' : V < 0 ? '역방향: 캐리어가 접합부에서 멀어지고 공핍층이 넓어짐' : '평형: 확산과 내부 전기장의 효과가 균형', 170, 377);
+}
+
+function formatCurrent(I) {
+  if (!Number.isFinite(I)) return '계산값 범위 확인 필요';
+  if (I === 0) return '0 A';
+  const a = Math.abs(I), sign = I < 0 ? '−' : '';
+  const units = [
+    {limit: 1, factor: 1, unit: 'A'},
+    {limit: 1e-3, factor: 1e3, unit: 'mA'},
+    {limit: 1e-6, factor: 1e6, unit: 'µA'},
+    {limit: 1e-9, factor: 1e9, unit: 'nA'},
+    {limit: 1e-12, factor: 1e12, unit: 'pA'}
+  ];
+  const u = units.find(v => a >= v.limit);
+  return u ? `${sign}${(a * u.factor).toPrecision(3)} ${u.unit}` : `${sign}${a.toExponential(2)} A`;
+}
+function formatCurrentDensity(J) {
+  if (!Number.isFinite(J)) return '계산값 범위 확인 필요';
+  if (J === 0) return '0 A/cm²';
+  const a = Math.abs(J), sign = J < 0 ? '−' : '';
+  const units = [
+    {limit: 1, factor: 1, unit: 'A/cm²'},
+    {limit: 1e-3, factor: 1e3, unit: 'mA/cm²'},
+    {limit: 1e-6, factor: 1e6, unit: 'µA/cm²'},
+    {limit: 1e-9, factor: 1e9, unit: 'nA/cm²'},
+    {limit: 1e-12, factor: 1e12, unit: 'pA/cm²'}
+  ];
+  const u = units.find(v => a >= v.limit);
+  return u ? `${sign}${(a * u.factor).toPrecision(3)} ${u.unit}` : `${sign}${a.toExponential(2)} A/cm²`;
+}
+function measDiode() {
+  const st = diodeState(), J = st.J, I = st.I;
+  // 막대는 회로 전류를 0~5 V 공급 범위의 최대 전류와 비교한 선형 표시입니다.
+  const width = Math.max(0, Math.min(100, Math.abs(I) / st.Imax * 100));
+  const color = I > 0 ? '#d97706' : I < 0 ? '#2563eb' : '#9ca3af';
+  const direction = I > 0 ? '관습적 전류 방향: P형 → N형 (순방향)' : I < 0 ? '관습적 전류 방향: N형 → P형 (매우 작은 역방향 누설 전류)' : '전압이 0 V이므로 알짜 전류가 없습니다.';
+  let stateText;
+  if (st.Vsource > 0) stateText = `순방향 바이어스: 회로 공급 전압 중 일부는 전구 등가 저항에 걸리고, 접합 전압은 ${st.V.toFixed(3)} V입니다. 실리콘은 약 0.7 V 전후부터 전류가 빠르게 늘지만 딱 끊기는 문턱은 아니며, 전구도 전류가 늘수록 서서히 밝아집니다.`;
+  else if (st.Vsource < 0) stateText = '역방향 바이어스: 전기장이 다수 캐리어를 접합부에서 밀어냅니다. P쪽 정공은 왼쪽으로, N쪽 전자는 오른쪽으로 이동하고 공핍층이 넓어집니다. 항복 전에는 아주 작은 누설 전류만 흐릅니다.';
+  else stateText = '평형 상태: 확산과 내부 전기장의 효과가 균형을 이루어 알짜 전류는 0입니다. 캐리어는 열운동으로 계속 움직입니다.';
+  return `<div class="diode-current-card">
+    <div class="diode-current-top"><span class="diode-current-title">현재 회로 전류 I</span><strong class="diode-current-value">${formatCurrent(I)}</strong></div>
+    <div class="diode-current-direction">${direction}</div>
+    <div class="diode-current-track" role="img" aria-label="0에서 5V 최대 공급 전류까지 선형으로 표시한 회로 전류"><div class="diode-current-fill" style="width:${width.toFixed(1)}%;background:${color}"></div></div>
+    <div class="diode-current-scale"><span>거의 0 A</span><span>5 V에서 약 ${formatCurrent(st.Imax)}</span></div>
+    <div class="diode-current-foot">공급 전압 V<sub>S</sub> ${st.Vsource > 0 ? '+' : ''}${st.Vsource.toFixed(2)} V · 접합 전압 V<sub>D</sub> ${st.V > 0 ? '+' : ''}${st.V.toFixed(3)} V · 전류 밀도 J ${formatCurrentDensity(J)}</div>
+    <div class="diode-current-caveat">계산 가정: 접합 면적 ${st.area.toExponential(1)} cm², 전구 등가 저항 ${st.loadR} Ω. I = J × 접합 면적으로 회로 전류를 구합니다. 전구 밝기는 전류에 따른 상대 표현이며 실제 필라멘트의 가열·저항 변화는 생략했습니다.</div>
+  </div><div class="diode-state-text">${stateText}</div>`;
+}
+function drawSemi() {
+  if (!semiDots) semiInit();
+  if (mode === 'band') drawBand(); else drawDiode();
+  if (frame % 5 === 0) {
+    $('meas').innerHTML = mode === 'band' ? measBand() : measDiode();
+    updateSemiDetails();
+  }
+}
+const UI2 = {
+band: {
+ ctrl: `<div class="choice-group"><div class="choice-title">반도체 재료</div><div class="choice-row">
+ <button class="choice-btn active" data-choice="MAT:Si" onclick="setSemiOption('MAT','Si')">Si</button>
+ <button class="choice-btn" data-choice="MAT:Ge" onclick="setSemiOption('MAT','Ge')">Ge</button>
+ <button class="choice-btn" data-choice="MAT:GaAs" onclick="setSemiOption('MAT','GaAs')">GaAs</button></div></div>
+ <select id="MAT" class="hidden-state"><option value="Si" selected>Si</option><option value="Ge">Ge</option><option value="GaAs">GaAs</option></select>
+ <div class="choice-group"><div class="choice-title">도핑 종류</div><div class="choice-row">
+ <button class="choice-btn" data-choice="DOP:i" onclick="setSemiOption('DOP','i')">진성</button>
+ <button class="choice-btn active" data-choice="DOP:n" onclick="setSemiOption('DOP','n')">n형</button>
+ <button class="choice-btn" data-choice="DOP:p" onclick="setSemiOption('DOP','p')">p형</button></div></div>
+ <select id="DOP" class="hidden-state"><option value="i">진성</option><option value="n" selected>n형</option><option value="p">p형</option></select>
+ <button class="detail-btn" id="detailToggle" onclick="toggleSemiDetails()">자세히 보기</button>`,
+ eq: '', exp: '',
+ note: `공의 개수는 실제 농도값을 그대로 나타내지 않고, 농도 변화 방향을 보여 주도록 로그 스케일로 단순화했어요. 페르미 준위는 초록 점선입니다.<br><br><b>0 K 표시 안내:</b> 화면의 0 K는 열에 의한 점프를 끈 이상화 모드입니다. 0 K를 그대로 계산하면 일부 식에서 0으로 나누게 되므로 밴드와 페르미 준위는 <b>실제 0 K 계산값이 아니라 1 K 근사값</b>으로 계산합니다.`
+},
+diode: {
+ ctrl: `<div class="choice-group"><div class="choice-title">반도체 재료</div><div class="choice-row">
+ <button class="choice-btn active" data-choice="MAT:Si" onclick="setSemiOption('MAT','Si')">Si</button>
+ <button class="choice-btn" data-choice="MAT:Ge" onclick="setSemiOption('MAT','Ge')">Ge</button></div></div>
+ <select id="MAT" class="hidden-state"><option value="Si" selected>Si</option><option value="Ge">Ge</option></select>
+ <label>회로 공급 전압 V<sub>S</sub>: <span class="v" id="VBv">0.00 V</span><input type="range" id="VB" min="-100" max="100" step="1" value="0"></label>
+ <div class="ro">조절 범위 −5 V ~ +5 V · 실리콘 다이오드는 약 0.7 V 전후부터 전류가 눈에 띄게 늘지만, 딱 끊기는 문턱값은 아니에요.</div>
+ <input type="hidden" id="NAL" value="16"><input type="hidden" id="NDL" value="16">
+ <button class="detail-btn" id="detailToggle" onclick="toggleSemiDetails()">자세히 보기</button>`,
+ eq: '', exp: '',
+ note: `교육용 회로 모델: 300 K, 양쪽 도핑 10¹⁶ cm⁻³의 실리콘 PN 접합을 사용합니다. 슬라이더는 다이오드 하나에만 걸리는 전압이 아니라 회로 공급 전압(−5~+5 V)입니다. 전구를 100 Ω의 고정 등가 저항으로 단순화하고 접합 면적을 10⁻⁴ cm²로 가정해, 다이오드 전압과 전구에 걸리는 전압을 나누어 계산합니다. 따라서 0.7 V 전후부터 전류가 빠르게 늘어나지만, 그보다 낮을 때도 아주 작은 전류는 흐를 수 있어요. 전구 밝기는 계산된 전류에 따른 상대적인 표현이며 실제 필라멘트의 가열·저항 변화는 생략했습니다. 역방향 항복도 생략했으며, 큰 순방향에서는 공핍층 폭 시각화만 안정 구간으로 제한합니다.`
+},
+rectify: {
+ ctrl: `<label>입력 전압 (최대값): <span class="v" id="ACVv">12.0 Vpeak</span><input type="range" id="ACV" min="0" max="12" step="0.1" value="12"></label>
+ <label>입력 주파수: <span class="v" id="ACFv">50 Hz</span><input type="range" id="ACF" min="10" max="120" step="5" value="50"></label>
+ <label>가로축 눈금 간격: <span class="v" id="ACGv">10 ms</span><input type="range" id="ACG" min="2" max="25" step="1" value="10"></label>
+ <div class="ro">눈금 간격에 따라 그래프 표시 시간도 함께 바뀝니다. 가로축은 항상 10칸으로 표시됩니다.</div>
+ <div class="ro">기본 진행 속도: <strong>1.25× (고정)</strong> · 주파수(Hz)와 파형 간격에는 영향을 주지 않습니다.</div>
+ <label>평활 콘덴서 용량: <span class="v" id="ACCv">470 µF</span><input type="range" id="ACC" min="0" max="2200" step="10" value="470"></label>
+ <label>부하 저항 R<sub>L</sub>: <span class="v" id="ACRv">1,000 Ω</span><input type="range" id="ACR" min="100" max="4700" step="50" value="1000"></label>
+ <div class="rectifier-actions"><button class="btn" id="rectPause" onclick="toggleRectifierPause()">⏸ 일시정지</button><button class="btn" onclick="resetRectifier()">🔄 다시 시작</button></div>`,
+ eq: '', exp: '',
+ note: `교육용 단순화 모델: 브리지에서는 실리콘 다이오드 2개가 직렬로 켜져 약 1.4 V가 떨어져요. 평활 콘덴서 뒤에는 직렬 저항 220 Ω과 제너 다이오드(기준 약 5.1 V), 부하가 연결돼요. 제너 전류가 약 5 mA 이상 확보되면 출력이 거의 일정해지고, 입력이 낮거나 부하가 무거우면 출력이 떨어져요. <b>콘덴서 충전은 정류 입력이 콘덴서 전압보다 높아지는 순간 전압을 바로 따라가도록 계산한 이상화 모델</b>이에요. 실제 회로의 충전 전류 제한과 충전 시간은 생략했으며, 변압기, 다이오드 동적 저항·역회복, 콘덴서 ESR, 제너 전력 한계와 부하 급변도 생략한 근사 모델이에요. 정전압 회로는 전압을 없애는 것이 아니라, 동작 가능한 범위에서 출력의 흔들림을 줄여 줘요. 초록 화살표는 관습적 전류, 파란 공은 전자 이동 방향이에요.`
+}
+};
+// ===================== ⑤ 브리지 전파 정류 + 평활 + 제너 정전압 =====================
+// 교육용 근사 회로: 브리지 실리콘 다이오드 2개(각 0.7 V), C, Rs=220 Ω,
+// 5.1 V 제너(무릎 전류 5 mA, 동적 저항 12 Ω), 가변 부하 RL.
+// 콘덴서는 정류 입력이 더 높을 때 충전되고, 나머지 시간에는 정전압 회로의 입력 전류만큼 방전합니다.
+const RECTIFIER_DIODE_DROP = 0.7;
+const RECTIFIER_SERIES_OHMS = 220;
+const RECTIFIER_ZENER_V = 5.1;
+const RECTIFIER_ZENER_KNEE_A = 0.005;
+const RECTIFIER_ZENER_R_OHMS = 12;
+const RECTIFIER_LOAD_DEFAULT = 1000;
+const RECTIFIER_TICK_DIVISIONS = 10; // 눈금 간격을 기준으로 가로축을 10칸 표시합니다.
+const RECTIFIER_MAX_DISPLAY_WINDOW_SECONDS = 0.25; // 눈금 최대 25 ms × 10칸에 맞춘 기록 보관 범위입니다.
+const RECTIFIER_MAX_STEP_SECONDS = 0.00005; // 파형 계산용 시간 간격(최대 50 µs)
+let rectifierInitialized = false;
+let rectifierTime = 0;
+let rectifierPhase = 0;
+let rectifierLastTs = null;
+let rectifierCapVoltage = 0;
+let rectifierHistory = [];
+let rectifierPaused = false;
+let rectifierCharging = false;
+let rectifierVin = 0;
+let rectifierVrect = 0;
+let rectifierVcap = 0;
+let rectifierVout = 0;
+let rectifierZenerCurrent = 0;
+let rectifierLoadCurrent = 0;
+let rectifierRegulated = false;
+
+function rectifierParam(id, fallback, min, max) {
+  const raw = val(id, fallback);
+  const safe = Number.isFinite(raw) ? raw : fallback;
+  return Math.max(min, Math.min(max, safe));
+}
+function rectifierAmplitude() { return rectifierParam('ACV', 12, 0, 12); }
+function rectifierFrequency() { return rectifierParam('ACF', 50, 10, 120); }
+function rectifierTickIntervalMs() { return rectifierParam('ACG', 10, 2, 25); }
+// 녹화 화면의 기준 표시 범위(11 ms × 10칸 = 110 ms)에서 보이는
+// 파형의 가로 이동 속도를 유지합니다. 눈금 범위가 바뀌면 시간 진행량을
+// 같은 비율로 보정해 화면상 이동 속도만 일정하게 유지합니다.
+const RECTIFIER_REFERENCE_WINDOW_SECONDS = 0.11;
+function rectifierPlaybackSpeed() {
+  const displayWindow = rectifierTickIntervalMs() * RECTIFIER_TICK_DIVISIONS / 1000;
+  return 1.25 * (displayWindow / RECTIFIER_REFERENCE_WINDOW_SECONDS);
+}
+function rectifierCapacitance() { return rectifierParam('ACC', 470, 0, 2200) * 1e-6; }
+function rectifierLoadResistance() { return rectifierParam('ACR', RECTIFIER_LOAD_DEFAULT, 100, 4700); }
+function rectifierInputAt() {
+  // 주파수를 움직여도 위상이 갑자기 점프하지 않도록 위상을 시간에 따라 누적합니다.
+  return rectifierAmplitude() * Math.sin(rectifierPhase);
+}
+function rectifierSourceAt(vin) {
+  // 브리지에서는 어느 반주기든 다이오드 2개를 통과합니다.
+  const safeVin = Number.isFinite(vin) ? vin : 0;
+  return Math.max(Math.abs(safeVin) - 2 * RECTIFIER_DIODE_DROP, 0);
+}
+function solveZenerRegulator(vs, loadR) {
+  // 제너의 무릎점을 단순화한 선형 모델. Iz=5 mA일 때 약 5.1 V가 됩니다.
+  const source = Number.isFinite(vs) ? Math.max(0, Math.min(20, vs)) : 0;
+  const rl = Number.isFinite(loadR) ? Math.max(100, Math.min(4700, loadR)) : RECTIFIER_LOAD_DEFAULT;
+  const kneeVoltage = RECTIFIER_ZENER_V - RECTIFIER_ZENER_R_OHMS * RECTIFIER_ZENER_KNEE_A;
+  const zenerIAt = voltage => Math.max(0, (voltage - kneeVoltage) / RECTIFIER_ZENER_R_OHMS);
+  const balance = voltage => voltage + RECTIFIER_SERIES_OHMS * (voltage / rl + zenerIAt(voltage)) - source;
+  let lo = 0, hi = source;
+  // 단조 증가하는 부하식의 해를 이분법으로 구합니다.
+  for (let i = 0; i < 64; i++) {
+    const mid = (lo + hi) * 0.5;
+    if (balance(mid) > 0) hi = mid; else lo = mid;
+  }
+  const vout = Math.max(0, Math.min(source, (lo + hi) * 0.5));
+  const iz = zenerIAt(vout);
+  const il = vout / rl;
+  const iseries = Math.max(0, (source - vout) / RECTIFIER_SERIES_OHMS);
+  const regulated = iz >= RECTIFIER_ZENER_KNEE_A * 0.999;
+  const finite = [vout, iz, il, iseries].every(Number.isFinite);
+  return finite
+    ? {vout, iz, il, iseries, regulated, zenerOn: iz > 0.0001}
+    : {vout: 0, iz: 0, il: 0, iseries: 0, regulated: false, zenerOn: false};
+}
+function updateRectifierLabels() {
+  const av = $('ACVv'), af = $('ACFv'), ag = $('ACGv'), ac = $('ACCv'), ar = $('ACRv');
+  if (av) av.textContent = `${rectifierAmplitude().toFixed(1)} Vpeak`;
+  if (af) af.textContent = `${rectifierFrequency().toFixed(0)} Hz`;
+  if (ag) ag.textContent = `${rectifierTickIntervalMs().toFixed(0)} ms`;
+  if (ac) ac.textContent = rectifierCapacitance() === 0 ? '없음 (0 µF)' : `${(rectifierCapacitance() * 1e6).toFixed(0)} µF`;
+  if (ar) ar.textContent = `${Math.round(rectifierLoadResistance()).toLocaleString('ko-KR')} Ω`;
+}
+function rectifierSnapshot() {
+  const vin = rectifierInputAt();
+  const vrect = rectifierSourceAt(vin);
+  const cap = rectifierCapacitance();
+  const vcap = cap <= 0 ? vrect : Math.max(0, Number.isFinite(rectifierCapVoltage) ? rectifierCapVoltage : 0);
+  const reg = solveZenerRegulator(vcap, rectifierLoadResistance());
+  return {
+    t: rectifierTime, vin, vrect, vcap, vout: reg.vout,
+    iz: reg.iz, il: reg.il, iseries: reg.iseries,
+    regulated: reg.regulated, zenerOn: reg.zenerOn
+  };
+}
+function resetRectifier() {
+  rectifierTime = 0;
+  rectifierPhase = 0;
+  rectifierLastTs = null;
+  rectifierCapVoltage = 0;
+  rectifierHistory = [];
+  rectifierPaused = false;
+  rectifierCharging = false;
+  rectifierVin = 0;
+  rectifierVrect = 0;
+  rectifierVcap = 0;
+  rectifierVout = 0;
+  rectifierZenerCurrent = 0;
+  rectifierLoadCurrent = 0;
+  rectifierRegulated = false;
+  const btn = $('rectPause');
+  if (btn) btn.textContent = '⏸ 일시정지';
+  updateRectifierLabels();
+}
+function toggleRectifierPause() {
+  rectifierPaused = !rectifierPaused;
+  const btn = $('rectPause');
+  if (btn) btn.textContent = rectifierPaused ? '▶ 재생' : '⏸ 일시정지';
+}
+function advanceRectifier(ts) {
+  if (rectifierLastTs === null) {
+    rectifierLastTs = ts;
+    const first = rectifierSnapshot();
+    rectifierHistory.push(first);
+    rectifierVin = first.vin; rectifierVrect = first.vrect; rectifierVcap = first.vcap; rectifierVout = first.vout;
+    rectifierZenerCurrent = first.iz; rectifierLoadCurrent = first.il; rectifierRegulated = first.regulated;
+    return;
+  }
+  const wallDt = Math.max(0, Math.min((ts - rectifierLastTs) / 1000, 0.1));
+  rectifierLastTs = ts; // 정지 중에도 시간을 갱신해 재생 시 점프하지 않게 합니다.
+  if (rectifierPaused || wallDt === 0) return;
+
+  // 눈금 범위가 바뀌어도 파형의 화면상 가로 이동 속도는 일정하게 유지합니다.
+  // 주파수(Hz)는 그대로 파형 간격에 반영되고, 진폭·C·부하값은 이동 속도를 바꾸지 않습니다.
+  const simDt = wallDt * rectifierPlaybackSpeed();
+  const subSteps = Math.max(1, Math.ceil(simDt / RECTIFIER_MAX_STEP_SECONDS));
+  const dt = simDt / subSteps;
+  const cap = rectifierCapacitance();
+  const amplitude = rectifierAmplitude();
+  const frequency = rectifierFrequency();
+  const loadR = rectifierLoadResistance();
+  let charging = false;
+
+  for (let i = 0; i < subSteps; i++) {
+    rectifierTime += dt;
+    rectifierPhase = (rectifierPhase + 2 * Math.PI * frequency * dt) % (2 * Math.PI);
+    const vin = amplitude * Math.sin(rectifierPhase);
+    const vrect = Math.max(Math.abs(vin) - 2 * RECTIFIER_DIODE_DROP, 0);
+    if (cap <= 0) {
+      // C=0이면 브리지 출력이 정전압 회로 입력에 그대로 연결됩니다.
+      rectifierCapVoltage = vrect;
+      charging = vrect > 0.001;
+    } else if (vrect > rectifierCapVoltage + 1e-7) {
+      // 정류 입력이 콘덴서보다 높을 때 브리지 다이오드 쌍이 도통해 충전합니다.
+      rectifierCapVoltage = vrect;
+      charging = true;
+    } else {
+      // 입력이 낮아지면 정전압 회로가 끌어가는 전류만큼 콘덴서가 방전합니다.
+      const reg = solveZenerRegulator(rectifierCapVoltage, loadR);
+      const dischargeCurrent = Math.max(0, (rectifierCapVoltage - reg.vout) / RECTIFIER_SERIES_OHMS);
+      rectifierCapVoltage = Math.max(0, rectifierCapVoltage - dischargeCurrent * dt / cap);
+      charging = false;
+    }
+    if (!Number.isFinite(rectifierCapVoltage) || rectifierCapVoltage < 1e-8) rectifierCapVoltage = 0;
+    rectifierCapVoltage = Math.max(0, rectifierCapVoltage);
+
+    // 매 계산 간격의 값을 저장해야 50/60/120 Hz의 실제 파형 간격이 그래프에 나타납니다.
+    const stepSample = rectifierSnapshot();
+    rectifierHistory.push(stepSample);
+  }
+
+  const sample = rectifierSnapshot();
+  rectifierVin = sample.vin;
+  rectifierVrect = sample.vrect;
+  rectifierVcap = sample.vcap;
+  rectifierVout = sample.vout;
+  rectifierZenerCurrent = sample.iz;
+  rectifierLoadCurrent = sample.il;
+  rectifierRegulated = sample.regulated;
+  rectifierCharging = charging;
+
+  const oldest = rectifierTime - RECTIFIER_MAX_DISPLAY_WINDOW_SECONDS;
+  while (rectifierHistory.length > 2 && rectifierHistory[1].t < oldest) rectifierHistory.shift();
+  if (rectifierHistory.length > 6500) rectifierHistory.splice(0, rectifierHistory.length - 6200);
+}
+function drawRectifierArrow(x1, y1, x2, y2, color, width = 3) {
+  const dx = x2 - x1, dy = y2 - y1, a = Math.atan2(dy, dx), head = 8;
+  x.strokeStyle = color; x.fillStyle = color; x.lineWidth = width;
+  x.beginPath(); x.moveTo(x1, y1); x.lineTo(x2, y2); x.stroke();
+  x.beginPath(); x.moveTo(x2, y2);
+  x.lineTo(x2 - head * Math.cos(a - Math.PI / 6), y2 - head * Math.sin(a - Math.PI / 6));
+  x.lineTo(x2 - head * Math.cos(a + Math.PI / 6), y2 - head * Math.sin(a + Math.PI / 6));
+  x.closePath(); x.fill(); x.lineWidth = 1;
+}
+function drawBridgeDiode(px, py, angle, active, label, lx, ly) {
+  x.save(); x.translate(px, py); x.rotate(angle);
+  const color = active ? '#34d399' : '#64748b';
+  x.strokeStyle = color; x.fillStyle = active ? 'rgba(52,211,153,.85)' : 'rgba(100,116,139,.75)';
+  x.lineWidth = 2;
+  // 전류가 흐르는 방향을 향한 삼각형과 음극 막대로 다이오드를 표현합니다.
+  x.beginPath(); x.moveTo(-10, -7); x.lineTo(3, 0); x.lineTo(-10, 7); x.closePath(); x.fill();
+  x.beginPath(); x.moveTo(6, -9); x.lineTo(6, 9); x.stroke();
+  x.restore();
+  x.fillStyle = active ? '#6ee7b7' : '#94a3b8'; x.font = 'bold 11px Malgun Gothic';
+  x.fillText(label, lx, ly);
+}
+function drawRectifierCircuit(st) {
+  const {vin, vrect, vcap, vout, charging, half, conducting, capLevel, zenerOn, regulated} = st;
+  x.fillStyle = '#e2e8f0'; x.font = 'bold 16px Malgun Gothic';
+  x.fillText('교류 입력 → 브리지 정류 → 평활 콘덴서 → 제너 정전압 → 부하', 15, 22);
+  x.fillStyle = '#94a3b8'; x.font = '11px Malgun Gothic';
+  x.fillText('양·음 반주기 모두 같은 방향으로 보내고, 콘덴서와 제너가 출력의 흔들림을 줄여요', 15, 40);
+
+  // AC source and two AC connections to the bridge.
+  roundBox(12, 55, 94, 116, 9, '#172033', '#475569');
+  x.strokeStyle = '#cbd5e1'; x.lineWidth = 2; x.beginPath(); x.arc(59, 105, 23, 0, Math.PI * 2); x.stroke();
+  x.strokeStyle = '#fbbf24'; x.lineWidth = 2.2; x.beginPath();
+  x.moveTo(43, 105); x.bezierCurveTo(48, 87, 54, 123, 59, 105); x.bezierCurveTo(64, 87, 70, 123, 75, 105); x.stroke(); x.lineWidth = 1;
+  x.fillStyle = '#e2e8f0'; x.font = 'bold 11px Malgun Gothic'; x.fillText('교류 전원', 33, 146);
+  x.fillStyle = '#fbbf24'; x.font = '10px sans-serif'; x.fillText(`${rectifierAmplitude().toFixed(1)} Vpeak`, 28, 161);
+  drawRectifierArrow(108, 95, 145, 95, '#fbbf24', 2);
+  drawRectifierArrow(108, 135, 145, 135, '#fbbf24', 2);
+
+  // Bridge with four diodes. Active pairs swap on alternate AC half-cycles.
+  roundBox(145, 51, 194, 126, 9, '#172033', '#475569');
+  x.fillStyle = '#cbd5e1'; x.font = 'bold 11px Malgun Gothic'; x.fillText('브리지 정류기', 190, 66);
+  const L = [170, 113], T = [242, 77], R = [314, 113], B = [242, 151];
+  x.strokeStyle = '#64748b'; x.lineWidth = 2.5;
+  x.beginPath(); x.moveTo(L[0],L[1]); x.lineTo(T[0],T[1]); x.lineTo(R[0],R[1]); x.lineTo(B[0],B[1]); x.lineTo(L[0],L[1]); x.stroke(); x.lineWidth = 1;
+  const positiveHalf = vin >= 0;
+  drawBridgeDiode(206, 94, -0.46, conducting && positiveHalf, 'D1', 185, 89);
+  drawBridgeDiode(278, 94, -2.68, conducting && !positiveHalf, 'D2', 282, 89);
+  drawBridgeDiode(206, 132, -2.68, conducting && !positiveHalf, 'D3', 185, 151);
+  drawBridgeDiode(278, 132, -0.46, conducting && positiveHalf, 'D4', 282, 151);
+  x.fillStyle = positiveHalf ? '#34d399' : '#94a3b8'; x.font = 'bold 12px sans-serif'; x.fillText(positiveHalf ? '+' : '−', 151, 117);
+  x.fillStyle = !positiveHalf ? '#34d399' : '#94a3b8'; x.fillText(!positiveHalf ? '+' : '−', 320, 117);
+  x.fillStyle = '#6ee7b7'; x.font = 'bold 10px sans-serif'; x.fillText('DC +', 226, 83);
+  x.fillStyle = '#93c5fd'; x.fillText('DC −', 226, 166);
+
+  // DC rails. The capacitor is before the series resistor; Zener and load are in parallel.
+  const topY = 82, bottomY = 151;
+  x.strokeStyle = '#94a3b8'; x.lineWidth = 2.8;
+  x.beginPath(); x.moveTo(242, topY); x.lineTo(430, topY); x.moveTo(518, topY); x.lineTo(720, topY);
+  x.moveTo(242, bottomY); x.lineTo(720, bottomY); x.stroke(); x.lineWidth = 1;
+  x.fillStyle = '#6ee7b7'; x.font = 'bold 10px sans-serif'; x.fillText('+', 330, topY - 7);
+  x.fillStyle = '#93c5fd'; x.fillText('−', 330, bottomY + 13);
+
+  // Smoothing capacitor across the unregulated DC rails.
+  const capX = 380;
+  x.strokeStyle = capLevel > 0.02 ? '#34d399' : '#64748b'; x.lineWidth = 2.4;
+  x.beginPath(); x.moveTo(capX, topY); x.lineTo(capX, 108); x.moveTo(capX - 17, 108); x.lineTo(capX + 17, 108);
+  x.moveTo(capX - 17, 119); x.lineTo(capX + 17, 119); x.moveTo(capX, 119); x.lineTo(capX, bottomY); x.stroke(); x.lineWidth = 1;
+  if (rectifierCapacitance() > 0) {
+    x.fillStyle = `rgba(52,211,153,${0.12 + capLevel * 0.34})`; x.fillRect(capX - 14, 110, 28, 7);
+    x.fillStyle = '#6ee7b7'; x.font = 'bold 10px sans-serif'; x.fillText('+ + +', capX - 13, 102); x.fillText('− − −', capX - 13, 134);
+  } else {
+    x.setLineDash([3,3]); x.strokeStyle = '#64748b'; x.strokeRect(capX - 19, 104, 38, 20); x.setLineDash([]);
+  }
+  x.fillStyle = '#cbd5e1'; x.font = '10px Malgun Gothic'; x.fillText(`평활 C ${Math.round(rectifierCapacitance()*1e6)} µF`, 347, 174);
+  if (charging && rectifierCapacitance() > 0) {
+    for (let i=0;i<3;i++) carrierDot(capX, 86 + ((frame*1.5+i*9)%18), '#fbbf24', false, 2.4);
+    drawRectifierArrow(359, 96, 359, 107, '#fbbf24', 2);
+  }
+
+  // Series resistor from capacitor reservoir to regulated output.
+  x.strokeStyle = '#cbd5e1'; x.lineWidth = 2.3; x.beginPath();
+  x.moveTo(430, topY); x.lineTo(444, topY);
+  const zig = [[451,topY-7],[460,topY+7],[469,topY-7],[478,topY+7],[487,topY-7],[496,topY+7],[503,topY]];
+  for (const pt of zig) x.lineTo(pt[0],pt[1]); x.lineTo(518,topY); x.stroke(); x.lineWidth = 1;
+  x.fillStyle = '#cbd5e1'; x.font = '10px Malgun Gothic'; x.fillText('직렬 저항', 452, 57); x.fillText('220 Ω', 463, 69);
+  if (vout > 0.05) drawRectifierArrow(432, 72, 450, 72, '#34d399', 2);
+
+  // Zener shunt branch: cathode at positive rail, anode at return rail.
+  const zx = 580;
+  x.strokeStyle = zenerOn ? '#34d399' : '#64748b'; x.lineWidth = 2.3;
+  x.beginPath(); x.moveTo(zx, topY); x.lineTo(zx, 99);
+  // 역방향 제너 다이오드: 위쪽이 캐소드(+), 아래쪽이 애노드(−)입니다.
+  x.moveTo(zx-11, 101); x.lineTo(zx+11, 101);
+  x.moveTo(zx-10, 119); x.lineTo(zx, 103); x.lineTo(zx+10, 119); x.closePath();
+  x.moveTo(zx, 119); x.lineTo(zx, bottomY); x.stroke();
+  // 캐소드 끝을 꺾어 일반 다이오드와 구별합니다.
+  x.beginPath(); x.moveTo(zx-11,101); x.lineTo(zx-15,96); x.moveTo(zx+11,101); x.lineTo(zx+15,96); x.stroke(); x.lineWidth = 1;
+  x.fillStyle = zenerOn ? '#6ee7b7' : '#94a3b8'; x.font = 'bold 10px Malgun Gothic'; x.fillText('제너 ZD', 557, 139); x.fillText('5.1 V', 562, 151);
+  if (zenerOn) drawRectifierArrow(zx+18, 105, zx+18, 139, '#34d399', 2);
+
+  // Load resistor in parallel with the Zener.
+  const lx = 688;
+  x.strokeStyle = '#cbd5e1'; x.lineWidth = 2.3; x.beginPath(); x.moveTo(lx, topY); x.lineTo(lx, 94);
+  x.lineTo(lx-8, 99); x.lineTo(lx+8, 105); x.lineTo(lx-8, 111); x.lineTo(lx+8, 117); x.lineTo(lx, 123);
+  x.lineTo(lx, bottomY); x.stroke(); x.lineWidth = 1;
+  x.fillStyle = '#cbd5e1'; x.font = 'bold 10px Malgun Gothic'; x.fillText('부하 R', 666, 139);
+  x.fillStyle = '#94a3b8'; x.font = '10px sans-serif'; x.fillText(`${Math.round(rectifierLoadResistance())} Ω`, 666, 151);
+  if (vout > 0.03) {
+    drawRectifierArrow(lx+17, 95, lx+17, 137, '#34d399', 2.2);
+    const currentStrength = Math.max(0, Math.min(1, rectifierLoadCurrent / 0.05));
+    const phase = (frame * (0.7 + currentStrength * 1.8)) % 38;
+    for (let i=0;i<3;i++) carrierDot(lx-17, 139-((phase+i*13)%38), '#3b82f6', false, 2.8);
+  }
+
+  x.fillStyle = regulated ? '#34d399' : '#fbbf24'; x.font = 'bold 11px Malgun Gothic';
+  x.fillText(regulated ? '제너 동작 중 · 출력 안정' : zenerOn ? '제너 전류 부족 · 조절 불안정' : '제너 꺼짐 · 출력이 입력을 따라감', 445, 45);
+  x.fillStyle = '#34d399'; x.font = '10px Malgun Gothic'; x.fillText('초록: 관습적 전류 방향', 16, 188);
+  x.fillStyle = '#60a5fa'; x.fillText('파랑: 전자 이동 방향(관습적 전류와 반대)', 175, 188);
+  x.fillStyle = '#94a3b8'; x.fillText('제너는 남는 전류를 흘려 출력 전압을 일정하게 유지해요', 480, 188);
+}
+function drawRectifierWavePanel(top, bottom, kind, plotStart, plotEnd, maxVolt, tickIntervalMs) {
+  const left = 92, right = 742, width = right - left;
+  const labels = {
+    input: ['① 교류 입력', '#fbbf24', 'vin'],
+    rectified: ['② 브리지 정류', '#fb923c', 'vrect'],
+    capacitor: ['③ 콘덴서 뒤', '#60a5fa', 'vcap'],
+    regulated: ['④ 제너 출력', '#34d399', 'vout']
+  };
+  const [label, color, key] = labels[kind];
+  const input = kind === 'input';
+  const baseline = input ? (top + bottom) * 0.5 + 5 : bottom - 7;
+  const usable = input ? (bottom - top - 22) * 0.50 : (bottom - top - 21);
+  const scale = usable / Math.max(0.5, maxVolt);
+  roundBox(12, top, 736, bottom-top, 7, '#172033', '#334155');
+  x.fillStyle = color; x.font = 'bold 10px Malgun Gothic'; x.fillText(label, 20, top+13);
+  x.strokeStyle = 'rgba(148,163,184,.35)'; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(left, baseline); x.lineTo(right, baseline); x.stroke();
+  // 사용자가 정한 눈금 간격으로 가로축 10칸을 표시합니다.
+  const displayMs = tickIntervalMs * RECTIFIER_TICK_DIVISIONS;
+  const divisions = RECTIFIER_TICK_DIVISIONS;
+  for (let i = 0; i <= divisions; i++) {
+    const px = left + width * (i * tickIntervalMs / displayMs);
+    x.strokeStyle = 'rgba(148,163,184,.22)';
+    x.beginPath(); x.moveTo(px, top + 17); x.lineTo(px, bottom - 3); x.stroke();
+  }
+  // 오른쪽 끝 경계를 표시합니다.
+  x.strokeStyle = 'rgba(148,163,184,.22)';
+  x.beginPath(); x.moveTo(right, top + 17); x.lineTo(right, bottom - 3); x.stroke();
+  if (kind === 'regulated') {
+    x.fillStyle = 'rgba(148,163,184,.78)'; x.font = '8px sans-serif';
+    x.fillText('0 ms', left, bottom - 5);
+    x.fillText(`${displayMs} ms`, right - 38, bottom - 5);
+  }
+  if (input) {
+    x.fillStyle='#94a3b8'; x.font='9px sans-serif'; x.fillText('+',75,baseline-usable+3); x.fillText('−',75,baseline+usable+2);
+  }
+  const startDenom = Math.max(1e-6, plotEnd-plotStart);
+  if (rectifierHistory.length>1) {
+    x.save(); x.beginPath(); x.rect(left,top+16,width,bottom-top-19); x.clip();
+    x.strokeStyle=color; x.lineWidth=2; x.beginPath(); let started=false;
+    for (const p of rectifierHistory) {
+      const px=left+((p.t-plotStart)/startDenom)*width;
+      const value=Number.isFinite(p[key])?p[key]:0;
+      const bounded=input?Math.max(-maxVolt,Math.min(maxVolt,value)):Math.max(0,Math.min(maxVolt,value));
+      const py=baseline-bounded*scale;
+      if (!Number.isFinite(px)||!Number.isFinite(py)) continue;
+      if (!started) {x.moveTo(px,py);started=true;} else x.lineTo(px,py);
+    }
+    x.stroke();x.restore();x.lineWidth=1;
+  }
+  const cursorX=left+Math.max(0,Math.min(1,(rectifierTime-plotStart)/startDenom))*width;
+  x.strokeStyle='rgba(255,255,255,.45)';x.setLineDash([2,3]);x.beginPath();x.moveTo(cursorX,top+16);x.lineTo(cursorX,bottom-3);x.stroke();x.setLineDash([]);
+  const now=rectifierHistory.length?rectifierHistory[rectifierHistory.length-1][key]:0;
+  const nowSafe=Number.isFinite(now)?now:0;
+  const bounded=input?Math.max(-maxVolt,Math.min(maxVolt,nowSafe)):Math.max(0,Math.min(maxVolt,nowSafe));
+  x.fillStyle=color;x.beginPath();x.arc(cursorX,baseline-bounded*scale,3.4,0,Math.PI*2);x.fill();
+}
+function drawRectifier(ts) {
+  advanceRectifier(ts);
+  const sample = rectifierHistory.length ? rectifierHistory[rectifierHistory.length-1] : rectifierSnapshot();
+  const vin = sample.vin, vrect = sample.vrect, vcap = sample.vcap, vout = sample.vout;
+  const positiveHalf = vin >= 0;
+  const cap = rectifierCapacitance();
+  const conducting = cap <= 0 ? vrect > 0.001 : rectifierCharging;
+  const peakRect = Math.max(0, rectifierAmplitude() - 2 * RECTIFIER_DIODE_DROP);
+  const capLevel = peakRect > 0 ? Math.max(0, Math.min(1, vcap / peakRect)) : 0;
+  const st = {
+    vin, vrect, vcap, vout, positiveHalf,
+    half: positiveHalf ? 'positive' : 'negative',
+    conducting, charging: cap > 0 && rectifierCharging, capLevel,
+    zenerOn: sample.zenerOn, regulated: sample.regulated
+  };
+
+  x.clearRect(0, 0, W, H); x.fillStyle = '#111827'; x.fillRect(0, 0, W, H);
+  drawRectifierCircuit(st);
+
+  // 눈금 간격 × 10칸을 표시 시간으로 사용합니다. 눈금 조절 시 시간축 범위도 함께 바뀝니다.
+  const windowSeconds = rectifierTickIntervalMs() * RECTIFIER_TICK_DIVISIONS / 1000;
+  const plotEnd = rectifierTime;
+  const plotStart = plotEnd - windowSeconds;
+  const inputMax = Math.max(1, rectifierAmplitude() * 1.08);
+  const positiveMax = Math.max(1, peakRect * 1.08);
+  const outputMax = Math.max(5.6, rectifierVout * 1.15);
+  const panelTops = [196, 300, 404, 508];
+  const panelHeight = 100; // 파형 한 줄마다 높이를 확보해 작은 화면에서도 곡선이 뭉개지지 않게 합니다.
+  const tickIntervalMs = rectifierTickIntervalMs();
+  const kinds = ['input', 'rectified', 'capacitor', 'regulated'];
+  kinds.forEach((kind, i) => drawRectifierWavePanel(panelTops[i], panelTops[i] + panelHeight, kind, plotStart, plotEnd,
+    kind === 'input' ? inputMax : kind === 'regulated' ? outputMax : positiveMax, tickIntervalMs));
+  x.fillStyle = '#cbd5e1'; x.font = '10px Malgun Gothic';
+  x.fillText(`가로축: ${tickIntervalMs.toFixed(0)} ms × 10칸 = ${(tickIntervalMs * RECTIFIER_TICK_DIVISIONS).toFixed(0)} ms · 눈금 간격: ${tickIntervalMs.toFixed(0)} ms`, 430, 208);
+
+  let state;
+  if (conducting && sample.regulated) {
+    state = positiveHalf
+      ? '양의 반주기: D1·D4가 열려 충전 전류가 흐르고, 제너가 출력 약 5.1 V를 유지해요.'
+      : '음의 반주기: D2·D3가 열려 충전 전류가 흘러요. 부하 전류 방향은 같고, 제너가 출력 전압을 유지해요.';
+  } else if (!conducting && cap > 0 && vcap > 0.05 && sample.regulated) {
+    state = '콘덴서가 저장한 에너지를 내보내는 중이에요. 브리지 다이오드는 닫혀 있고, 제너가 출력 전압을 유지해요.';
+  } else if (conducting && sample.zenerOn) {
+    state = '브리지 다이오드 쌍이 충전 전류를 보내지만 제너 전류가 부족해요. 정전압 출력이 흔들려요.';
+  } else if (sample.zenerOn) {
+    state = '제너에 전류가 흐르지만 최소 동작 전류가 부족해요. 출력이 조금 흔들릴 수 있어요.';
+  } else if (vout > 0.05) {
+    state = cap > 0 && !conducting
+      ? '콘덴서가 부하에 에너지를 내보내지만 제너는 동작하지 않아요. 출력이 입력과 부하에 따라 변해요.'
+      : '제너가 꺼져 있어요. 출력은 입력과 부하에 따라 함께 낮아지고 높아져요.';
+  } else {
+    state = '입력이 낮아 다이오드 강하와 직렬 저항을 이길 수 없어요. 출력이 거의 0 V예요.';
+  }
+  const currentPath = positiveHalf ? 'D1·D4' : 'D2·D3';
+  const zenerStatus = sample.regulated ? '정전압 동작' : sample.zenerOn ? '제너 전류 부족' : '정전압 미동작';
+  const outputDescription = cap <= 0 ? '콘덴서 없음' : `${Math.round(cap*1e6)} µF`;
+  const values = `입력 ${vin>=0?'+':''}${vin.toFixed(2)} V · 정류 ${vrect.toFixed(2)} V · 콘덴서 뒤 ${vcap.toFixed(2)} V · 최종 출력 ${vout.toFixed(2)} V`;
+  const currents = `제너 전류 ${(sample.iz*1000).toFixed(1)} mA · 부하 전류 ${(sample.il*1000).toFixed(1)} mA · 부하 ${Math.round(rectifierLoadResistance())} Ω`;
+  $('meas').innerHTML = `<b>${state}</b><br><span style="color:#94a3b8;font-size:11px">${values}</span><br><span style="color:#6ee7b7;font-size:11px">현재 도통 쌍: ${conducting ? currentPath : '없음(콘덴서가 공급 중)'} · ${zenerStatus} · C ${outputDescription}</span><br><span style="color:#94a3b8;font-size:11px">${currents}</span><br><span style="color:#cbd5e1;font-size:11px">정류는 방향을 한쪽으로 바꾸고, 콘덴서는 리플을 줄이며, 제너는 동작 범위에서 출력 전압을 안정시켜요.</span>`;
+}
+
+// ===================== ⑦~⑨ 반도체 캐리어 이론 시각화 =====================
+const THEORY_UI = {
+  generation: {
+    ctrl: `<div class="theory-controls">
+      <div class="choice-title">생성 원인 선택</div>
+      <div class="theory-choice-row">
+        <button class="choice-btn active" id="genSourceLight" onclick="setGenerationSource('light')">빛으로 생성</button>
+        <button class="choice-btn" id="genSourceHeat" onclick="setGenerationSource('heat')">열로 생성</button>
+      </div>
+      <label>재결합 정도: <span class="theory-control-value" id="recombStrengthValue">35%</span><input type="range" id="recombStrength" min="0" max="100" step="5" value="35"></label>
+      <div class="theory-small">빛 또는 열을 선택하면 전자·정공 한 쌍이 반복해서 생성돼요. 재결합 정도를 높이면 두 캐리어가 함께 사라지는 시간이 짧아집니다.</div>
+    </div>`,
+    exp: `<b>전자·정공 생성</b>은 전자가 에너지를 받아 가전자대에서 전도대로 올라가는 과정이에요. 전자가 빠져나간 자리에는 <span class="h">정공(+)이라는 빈자리</span>가 남아요. 이때 전자와 정공은 항상 한 쌍으로 생성됩니다.<br><br><b>재결합</b>은 전도대 전자가 빈자리인 정공을 메우는 과정이에요. 전자와 정공이 함께 사라지고 에너지가 방출될 수 있어요.`,
+    note: `단순화 안내: 화면은 전자와 정공 한 쌍을 추적해 보여 주는 개념 모형입니다. 실제 반도체에서는 생성된 전자와 정공이 서로 다른 위치에서 움직이다가 다른 정공·전자와 재결합할 수 있어요. 빛 또는 열에 의한 생성량은 재료·온도·빛의 파장과 세기 등에 좌우되므로, 화면의 점 개수와 속도는 실제 농도나 생성률의 정량값이 아닙니다. 빛·열 선택은 생성 원인을 구분하는 시각 모드이며 실제 광량·온도를 계산하지 않습니다. 열평형에서는 평균적으로 생성률과 재결합률이 같아질 수 있어요.`
+  },
+  carriers: {
+    ctrl: `<div class="theory-controls">
+      <div class="choice-title">도핑 종류 선택</div>
+      <div class="theory-choice-row">
+        <button class="choice-btn active" id="dopTypeN" onclick="setDopingType('n')">n형</button>
+        <button class="choice-btn" id="dopTypeP" onclick="setDopingType('p')">p형</button>
+      </div>
+      <label>도핑 강도(상대값): <span class="theory-control-value" id="dopingLevelValue">3단계</span><input type="range" id="dopingLevel" min="1" max="5" step="1" value="3"></label>
+      <button class="detail-btn" type="button" onclick="toggleTheoryDetails()">자세히 보기: 평형 관계</button>
+      <div class="theory-small">n형·p형 버튼을 바꾸면 전자와 정공 중 어느 쪽이 더 많은지 비교할 수 있어요.</div>
+    </div>`,
+    exp: `<b>다수 캐리어</b>는 도핑 때문에 상대적으로 많이 생기는 전하 운반자예요. <b>소수 캐리어</b>는 수가 적은 쪽이에요.<br><br>n형은 전자가 다수, 정공이 소수이고 p형은 정공이 다수, 전자가 소수예요. <b>소수 캐리어도 0개가 아니라 적은 수로 존재</b>합니다. 정공은 실제 입자 덩어리가 아니라 전자가 빠져나간 빈자리의 효과를 양전하처럼 표현한 것이에요.`,
+    note: `단순화 안내: 점의 개수는 다수·소수 관계를 보여 주는 상대적인 그림일 뿐, 실제 농도(cm⁻³)나 특정 도핑 농도를 뜻하지 않습니다. 실제 다수·소수 캐리어 농도는 반도체 재료, 온도, 도핑량 및 열평형 여부에 따라 달라집니다.`
+  },
+  conductivity: {
+    ctrl: `<div class="theory-controls">
+      <div class="choice-title">다수 캐리어 종류</div>
+      <div class="theory-choice-row">
+        <button class="choice-btn active" id="condTypeN" onclick="setConductivityType('n')">전자 중심(n형)</button>
+        <button class="choice-btn" id="condTypeP" onclick="setConductivityType('p')">정공 중심(p형)</button>
+      </div>
+      <label>다수 캐리어 수: <span class="theory-control-value" id="carrierAmountValue">20개</span><input type="range" id="carrierAmount" min="0" max="40" step="1" value="20"></label>
+      <label>이동도 배율: <span class="theory-control-value" id="mobilityScaleValue">5단계</span><input type="range" id="mobilityScale" min="1" max="10" step="1" value="5"></label>
+      <div class="theory-small">전기장은 오른쪽(→)으로 고정했어요. 전자는 왼쪽으로, 정공은 오른쪽으로 움직이지만 두 전류의 방향은 모두 오른쪽이에요. 다수 캐리어 수를 0으로 두면 일반적인 n형·p형이 아닌 비교용 설정이라고 표시합니다.</div>
+    </div>`,
+    exp: `<b>전도도</b>(σ)는 전류가 얼마나 잘 흐르는지를 나타내고, <b>저항률</b>(ρ)은 전류가 흐르기 얼마나 어려운지를 나타내요. 캐리어가 많아지거나 이동도가 커지면 전도도는 커지고 저항률은 작아집니다.<br><br><span class="theory-equation">σ = q(nμₙ + pμₚ) &nbsp; · &nbsp; ρ = 1/σ</span><br>q는 기본 전하량, n·p는 전자·정공 농도, μₙ·μₚ는 각각의 이동도예요.`,
+    note: `단순화 안내: 화면의 캐리어 수와 이동도 단계는 실제 cm⁻³, cm²/(V·s) 값이 아닌 상대값입니다. 이동도 배율은 두 캐리어의 이동도를 함께 키우며, 보기 쉽게 μₚ = 0.4μₙ인 실리콘 근사 비율을 사용합니다. 실제 전도도는 재료·온도·도핑·산란 조건에 따라 달라집니다.`
+  }
+};
+
+function setGenerationSource(source) {
+  generationSource = source === 'heat' ? 'heat' : 'light';
+  if ($('genSourceLight')) $('genSourceLight').classList.toggle('active', generationSource === 'light');
+  if ($('genSourceHeat')) $('genSourceHeat').classList.toggle('active', generationSource === 'heat');
+}
+function setDopingType(type) {
+  dopingType = type === 'p' ? 'p' : 'n';
+  if ($('dopTypeN')) $('dopTypeN').classList.toggle('active', dopingType === 'n');
+  if ($('dopTypeP')) $('dopTypeP').classList.toggle('active', dopingType === 'p');
+  updateTheoryControlLabels(); renderTheoryDetails();
+}
+function setConductivityType(type) {
+  conductivityType = type === 'p' ? 'p' : 'n';
+  if ($('condTypeN')) $('condTypeN').classList.toggle('active', conductivityType === 'n');
+  if ($('condTypeP')) $('condTypeP').classList.toggle('active', conductivityType === 'p');
+  updateTheoryControlLabels();
+}
+function toggleTheoryDetails() {
+  theoryDetailsOpen = !theoryDetailsOpen;
+  renderTheoryDetails();
+}
+function updateTheoryControlLabels() {
+  const put = (id, value) => { if ($(id)) $(id).textContent = value; };
+  put('recombStrengthValue', `${Math.round(val('recombStrength', 35))}%`);
+  put('dopingLevelValue', `${Math.round(val('dopingLevel', 3))}단계`);
+  put('carrierAmountValue', `${Math.round(val('carrierAmount', 20))}개`);
+  put('mobilityScaleValue', `${Math.round(val('mobilityScale', 5))}단계`);
+  if ($('genSourceLight')) $('genSourceLight').classList.toggle('active', generationSource === 'light');
+  if ($('genSourceHeat')) $('genSourceHeat').classList.toggle('active', generationSource === 'heat');
+  if ($('dopTypeN')) $('dopTypeN').classList.toggle('active', dopingType === 'n');
+  if ($('dopTypeP')) $('dopTypeP').classList.toggle('active', dopingType === 'p');
+  if ($('condTypeN')) $('condTypeN').classList.toggle('active', conductivityType === 'n');
+  if ($('condTypeP')) $('condTypeP').classList.toggle('active', conductivityType === 'p');
+}
+function renderTheoryDetails() {
+  const box = $('theoryDetails');
+  if (!box) return;
+  if (mode === 'carriers' && theoryDetailsOpen) {
+    box.style.display = 'block';
+    box.innerHTML = `<b>열평형에서의 질량 작용 법칙</b><br><span class="theory-equation">n₀ × p₀ = nᵢ²</span><br>전자 농도 n₀와 정공 농도 p₀의 곱은 고유 캐리어 농도 nᵢ의 제곱과 같아요. 도핑으로 다수 캐리어가 늘어나면, 열평형을 유지하는 소수 캐리어 농도는 작아집니다.<br><span class="theory-small">이 관계는 열평형의 비축퇴 반도체를 기준으로 한 식이에요. 위 그림의 입자 개수에 그대로 곱셈을 적용하는 것은 아니며, 그림은 상대적인 개념 표시입니다.</span>`;
+  } else {
+    box.style.display = 'none';
+    box.innerHTML = '';
+  }
+}
+function theoryText(text, x0, y0, color = '#e2e8f0', size = 14, weight = 'normal') {
+  tx.fillStyle = color; tx.font = `${weight} ${size}px Malgun Gothic, sans-serif`; tx.fillText(text, x0, y0);
+}
+function theoryDot(x0, y0, type, radius = 6, alpha = 1) {
+  tx.save(); tx.globalAlpha = alpha;
+  if (type === 'e') {
+    tx.fillStyle = '#3b82f6'; tx.beginPath(); tx.arc(x0, y0, radius, 0, Math.PI * 2); tx.fill();
+    tx.fillStyle = '#dbeafe'; tx.font = `bold ${Math.max(9, radius + 4)}px sans-serif`; tx.textAlign = 'center'; tx.textBaseline = 'middle'; tx.fillText('−', x0, y0 + 0.5);
+  } else {
+    tx.strokeStyle = '#ef4444'; tx.lineWidth = 2.5; tx.beginPath(); tx.arc(x0, y0, radius, 0, Math.PI * 2); tx.stroke();
+    tx.fillStyle = '#fecaca'; tx.font = `bold ${Math.max(9, radius + 3)}px sans-serif`; tx.textAlign = 'center'; tx.textBaseline = 'middle'; tx.fillText('+', x0, y0 + 0.5);
+  }
+  tx.restore(); tx.textAlign = 'left'; tx.textBaseline = 'alphabetic';
+}
+function theoryArrow(x1, y1, x2, y2, color = '#facc15', width = 2) {
+  const ang = Math.atan2(y2-y1, x2-x1);
+  tx.strokeStyle = color; tx.fillStyle = color; tx.lineWidth = width;
+  tx.beginPath(); tx.moveTo(x1,y1); tx.lineTo(x2,y2); tx.stroke();
+  tx.beginPath(); tx.moveTo(x2,y2); tx.lineTo(x2-9*Math.cos(ang-0.45),y2-9*Math.sin(ang-0.45)); tx.lineTo(x2-9*Math.cos(ang+0.45),y2-9*Math.sin(ang+0.45)); tx.closePath(); tx.fill();
+}
+function advanceGeneration() {
+  const generation = 1; // 선택한 빛/열 자극에 따라 개념적으로 일정한 간격으로 생성
+  const recombination = Math.max(0, Math.min(100, val('recombStrength', 35)));
+  const interval = 55; // 약 0.9초마다 한 쌍: 실제 생성률 단위가 아닌 시각화용 시간
+
+  // 화면에 보이는 쌍의 수와 생성 이벤트 자체를 분리합니다.
+  // 표시 공간이 가득 차면 가장 오래된 쌍은 화면 밖의 집계 상태로 옮기고,
+  // 새 생성 애니메이션은 계속 추가합니다.
+  if (generation > 0 && theoryFrame - generationLastSpawn >= interval) {
+    let x0 = null;
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const candidate = 70 + Math.random() * 620;
+      if (generationPairs.every(pair => Math.abs(pair.ex-candidate) > 38 && Math.abs(pair.hx-candidate) > 38)) { x0 = candidate; break; }
+    }
+    if (x0 === null) x0 = 70 + Math.random() * 620;
+
+    if (generationPairs.length >= MAX_VISIBLE_GENERATION_PAIRS) {
+      // 생성 순서대로 쌓이므로 가장 오래된 1쌍을 화면 밖으로 옮깁니다.
+      const [evicted] = generationPairs.splice(0, 1);
+      if (evicted.state === 'recombine') {
+        generationOffscreenRecombining.push({progress: evicted.progress || 0});
+      } else {
+        // 화면 밖으로 옮겨도 각 쌍의 재결합 진행률은 그대로 보존합니다.
+        generationOffscreenActiveProgress.push(evicted.recombProgress || 0);
+      }
+    }
+
+    generationPairs.push({id: ++generationSerial, ex: x0, hx: x0, x: x0, state: 'create', progress: 0, recombProgress: 0, wobble: Math.random()*Math.PI*2});
+    generationTotal++;
+    generationLastSpawn = theoryFrame;
+  }
+
+  // 화면 밖 활성 쌍도 개별 재결합 진행률을 보존하고 계속 갱신합니다.
+  // 그림에는 최근 12쌍만 보이지만 누적 생성·재결합·남은 쌍 수는 모두 추적합니다.
+  if (recombination > 0 && generationOffscreenActiveProgress.length) {
+    const stillActiveProgress = [];
+    for (let progress of generationOffscreenActiveProgress) {
+      progress = Math.min(1, progress + recombination / 5000);
+      if (progress >= 1) recombinationTotal++;
+      else stillActiveProgress.push(progress);
+    }
+    generationOffscreenActiveProgress = stillActiveProgress;
+  }
+  const stillRecombining = [];
+  for (const hiddenPair of generationOffscreenRecombining) {
+    hiddenPair.progress = Math.min(1, hiddenPair.progress + 0.04);
+    if (hiddenPair.progress >= 1) recombinationTotal++;
+    else stillRecombining.push(hiddenPair);
+  }
+  generationOffscreenRecombining = stillRecombining;
+
+  for (const pair of generationPairs) {
+    if (pair.state === 'create') {
+      pair.progress = Math.min(1, pair.progress + 0.045);
+      if (pair.progress >= 1) pair.state = 'active';
+    } else if (pair.state === 'active') {
+      pair.ex = Math.max(55, Math.min(705, pair.ex + Math.sin(theoryFrame*0.035 + pair.wobble)*0.32));
+      pair.hx = Math.max(55, Math.min(705, pair.hx + Math.cos(theoryFrame*0.031 + pair.wobble)*0.26));
+      if (recombination > 0) {
+        pair.recombProgress = Math.min(1, (pair.recombProgress || 0) + recombination / 5000);
+        if (pair.recombProgress >= 1) { pair.state = 'recombine'; pair.progress = 0; }
+      }
+    } else if (pair.state === 'recombine') {
+      pair.progress = Math.min(1, pair.progress + 0.04);
+    }
+  }
+
+  generationPairs = generationPairs.filter(pair => {
+    if (pair.state === 'recombine' && pair.progress >= 1) { recombinationTotal++; return false; }
+    return true;
+  });
+}
+function drawGenerationTheory() {
+  const cw = theoryCanvas.width, ch = theoryCanvas.height, topBand = 105, bottomBand = 305;
+  tx.clearRect(0,0,cw,ch); tx.fillStyle = '#111827'; tx.fillRect(0,0,cw,ch);
+  tx.fillStyle = '#1e3a5f'; tx.fillRect(24,76,cw-48,58);
+  tx.fillStyle = '#4a2630'; tx.fillRect(24,276,cw-48,58);
+  theoryText('에너지 ↑', 28, 28, '#fbbf24', 13, 'bold');
+  theoryText('전도대', 38, 98, '#93c5fd', 16, 'bold');
+  theoryText('가전자대', 38, 298, '#fca5a5', 16, 'bold');
+  theoryText('전자 e⁻가 에너지를 얻어 위로 이동', 225, 55, '#e2e8f0', 14);
+  theoryArrow(355,245,355,153,'#facc15',3);
+  if (generationSource === 'light') {
+    for (let i=0;i<5;i++) {
+      const px=505+i*26, py=180+Math.sin(theoryFrame*0.08+i)*8;
+      tx.strokeStyle='#fde047'; tx.lineWidth=2; tx.beginPath(); tx.moveTo(px-8,py-10); tx.lineTo(px+8,py+10); tx.stroke();
+      tx.beginPath(); tx.moveTo(px+8,py-10); tx.lineTo(px-8,py+10); tx.stroke();
+    }
+    theoryText('빛 에너지', 505, 215, '#fde047', 12, 'bold');
+  } else {
+    for (let i=0;i<5;i++) {
+      const px=500+i*27;
+      tx.strokeStyle='#fb923c'; tx.lineWidth=2; tx.beginPath();
+      for(let j=0;j<=24;j++){const yy=175+j*2.2; const xx=px+Math.sin(j*0.65+theoryFrame*0.12)*5; if(j===0)tx.moveTo(xx,yy);else tx.lineTo(xx,yy);}
+      tx.stroke();
+    }
+    theoryText('열에너지(진동)', 500, 245, '#fdba74', 12, 'bold');
+  }
+  for (const pair of generationPairs) {
+    const holeX=pair.hx, electronX=pair.ex;
+    theoryDot(holeX,bottomBand,'h',7,pair.state==='recombine'?1-pair.progress:1);
+    let ey=topBand;
+    if(pair.state==='create') ey=bottomBand-190*pair.progress;
+    if(pair.state==='recombine') { ey=topBand+(bottomBand-topBand)*pair.progress; }
+    const ex=pair.state==='recombine' ? electronX+(holeX-electronX)*pair.progress : electronX;
+    theoryDot(ex,ey,'e',7,pair.state==='recombine'?1-pair.progress:1);
+  }
+  theoryText(`생성된 쌍 ${generationTotal}회`, 36, 365, '#93c5fd', 13, 'bold');
+  theoryText(`재결합한 쌍 ${recombinationTotal}회`, 220, 365, '#fca5a5', 13, 'bold');
+  theoryText(`현재 남은 쌍 ${Math.max(0, generationTotal - recombinationTotal)}개`, 445, 365, '#e2e8f0', 13, 'bold');
+  if (theoryFrame % 12 === 0) {
+    $('theorySummary').innerHTML = `<b>지금 화면에서 확인할 것</b><br>생성이 일어날 때 파란 <span class="e">전자 1개</span>가 위로 올라가고, 빨간 <span class="h">정공 1개</span>가 아래 자리에 남아요. 재결합이 끝나면 두 표시가 함께 사라집니다.<br><span class="theory-small">누적 생성 ${generationTotal}쌍 · 누적 재결합 ${recombinationTotal}쌍 · 현재 남은 쌍 ${Math.max(0, generationTotal - recombinationTotal)}쌍. 화면에는 최근 최대 ${MAX_VISIBLE_GENERATION_PAIRS}쌍만 표시하고, 화면 밖 쌍도 각자의 재결합 진행률을 유지하며 집계합니다. 전자와 정공은 항상 한 쌍으로 생성·제거됩니다.</span>`;
+  }
+}
+function carrierCountsRelative() {
+  const level = Math.max(1, Math.min(5, Math.round(val('dopingLevel',3))));
+  const majority = 12 + level*4;
+  const minority = Math.max(2, 8-level);
+  return dopingType === 'n' ? {n:majority,p:minority,level} : {n:minority,p:majority,level};
+}
+function drawCarrierTheory() {
+  const cw=theoryCanvas.width,ch=theoryCanvas.height, counts=carrierCountsRelative();
+  tx.clearRect(0,0,cw,ch); tx.fillStyle='#111827'; tx.fillRect(0,0,cw,ch);
+  tx.fillStyle='#1e293b'; tx.fillRect(42,72,cw-84,258);
+  for(let row=0;row<4;row++) for(let col=0;col<9;col++) {
+    const ax=82+col*74, ay=104+row*67;
+    tx.strokeStyle='#64748b';tx.lineWidth=1.3;tx.beginPath();tx.arc(ax,ay,11,0,Math.PI*2);tx.stroke();
+    theoryText('Si',ax-7,ay+4,'#94a3b8',10);
+  }
+  theoryText(dopingType==='n'?'n형 반도체 · 도너가 전자를 제공':'p형 반도체 · 억셉터가 전자를 받아들임',50,42,'#f8fafc',16,'bold');
+  for(let i=0;i<counts.n;i++) {
+    const px=62+((i*83+19)%636), py=87+((i*47+31)%230);
+    theoryDot(px,py,'e',6,0.98);
+  }
+  for(let i=0;i<counts.p;i++) {
+    const px=72+((i*127+71)%616), py=93+((i*61+103)%218);
+    theoryDot(px,py,'h',6,0.98);
+  }
+  const majorityName=dopingType==='n'?'전자':'정공', minorityName=dopingType==='n'?'정공':'전자';
+  theoryText(`다수 캐리어: ${majorityName} ${dopingType==='n'?counts.n:counts.p}개`,48,365,dopingType==='n'?'#93c5fd':'#fca5a5',13,'bold');
+  theoryText(`소수 캐리어: ${minorityName} ${dopingType==='n'?counts.p:counts.n}개 (0개 아님)`,390,365,dopingType==='n'?'#fca5a5':'#93c5fd',13,'bold');
+  $('theorySummary').innerHTML = dopingType==='n'
+    ? `<b>n형:</b> 도너 불순물이 전자를 내놓아 <span class="e">전자</span>가 다수 캐리어가 됩니다. <span class="h">정공</span>도 적은 수로 남아 소수 캐리어 역할을 해요.<br>도핑 강도 ${counts.level}단계 · 그림의 전자 ${counts.n}개 / 정공 ${counts.p}개 (상대 표시)`
+    : `<b>p형:</b> 억셉터 불순물이 전자를 받아들여 <span class="h">정공</span>이 다수 캐리어가 됩니다. <span class="e">전자</span>도 적은 수로 남아 소수 캐리어 역할을 해요.<br>도핑 강도 ${counts.level}단계 · 그림의 정공 ${counts.p}개 / 전자 ${counts.n}개 (상대 표시)`;
+}
+function conductivityCounts() {
+  const amount=Math.max(0,Math.min(40,Math.round(val('carrierAmount',20))));
+  const scale=Math.max(1,Math.min(10,Math.round(val('mobilityScale',5))))/5;
+  const n=conductivityType==='n'?amount:2;
+  const p=conductivityType==='p'?amount:2;
+  const muN=scale, muP=0.4*scale;
+  const sigma=n*muN+p*muP;
+  const rho=1/Math.max(sigma,1e-9);
+  return {n,p,muN,muP,sigma,rho,amount,scale};
+}
+function drawConductivityTheory() {
+  const cw=theoryCanvas.width,ch=theoryCanvas.height,v=conductivityCounts();
+  tx.clearRect(0,0,cw,ch);tx.fillStyle='#111827';tx.fillRect(0,0,cw,ch);
+  tx.fillStyle='#1e293b';tx.fillRect(45,90,cw-90,210);
+  theoryText('전기장 E',55,48,'#facc15',14,'bold'); theoryArrow(130,43,245,43,'#facc15',3);
+  theoryText('전자 e⁻ 이동',55,80,'#93c5fd',12,'bold'); theoryArrow(180,76,105,76,'#3b82f6',2);
+  theoryText('정공 h⁺ 이동 (약 0.4배)',270,80,'#fca5a5',12,'bold'); theoryArrow(390,76,465,76,'#ef4444',2);
+  const travelN=(theoryFrame*0.9*v.muN)%560;
+  const travelP=(theoryFrame*0.9*v.muP)%560;
+  for(let i=0;i<v.n;i++) {
+    const base=75+((i*83+37)%610), px=75+(((base-75-travelN)%610+610)%610), py=120+((i*47+11)%155);
+    theoryDot(px,py,'e',6,0.98);
+  }
+  for(let i=0;i<v.p;i++) {
+    const base=75+((i*127+91)%610), px=75+(((base-75+travelP)%610+610)%610), py=120+((i*59+53)%155);
+    theoryDot(px,py,'h',6,0.98);
+  }
+  theoryText('관습적 전류 방향 →',510,48,'#6ee7b7',13,'bold');
+  const sigmaWidth=Math.max(2,Math.min(500,(v.sigma/81.6)*500));
+  const rhoWidth=Math.max(2,Math.min(500,(v.rho/6.25)*500));
+  tx.fillStyle='#334155';tx.fillRect(110,325,500,14);tx.fillStyle='#10b981';tx.fillRect(110,325,sigmaWidth,14);
+  tx.fillStyle='#334155';tx.fillRect(110,350,500,10);tx.fillStyle='#f59e0b';tx.fillRect(110,350,rhoWidth,10);
+  theoryText(`전도도 σ* = ${v.sigma.toFixed(2)} · 막대가 길수록 전류가 잘 흐름`,48,318,'#6ee7b7',12,'bold');
+  theoryText(`저항률 ρ* = ${v.rho.toFixed(2)} · 막대가 길수록 전류가 흐르기 어려움`,48,380,'#fbbf24',12,'bold');
+  const majorityLabel = conductivityType === 'n' ? '전자 중심(n형 기준)' : '정공 중심(p형 기준)';
+  const zeroMajorityNotice = v.amount === 0
+    ? `<br><b style="color:#fbbf24">주의: 다수 캐리어를 0개로 설정했습니다.</b> 현재는 ${majorityLabel}에서 다수 캐리어가 없는 비교용 설정이며, 일반적인 n형·p형 반도체 상태를 나타내지 않습니다. 소수 캐리어 표본은 계속 남아 있습니다.`
+    : `<br>현재는 ${majorityLabel} 설정으로, 선택한 종류가 다수 캐리어입니다.`;
+  $('theorySummary').innerHTML = `현재 표본: 전자 n = ${v.n}개, 정공 p = ${v.p}개 · μₙ = ${v.muN.toFixed(2)}, μₚ = ${v.muP.toFixed(2)} (상대값, μₚ/μₙ = ${(v.muP/v.muN).toFixed(2)})<br><b>전도도 σ* = ${v.sigma.toFixed(2)}</b> · <b>저항률 ρ* = ${v.rho.toFixed(2)}</b>${zeroMajorityNotice}<br>위쪽 초록 막대는 전도도(길수록 잘 흐름), 아래쪽 주황 막대는 저항률(길수록 흐르기 어려움)을 나타냅니다. 캐리어 수나 이동도를 높이면 전도도는 커지고 저항률은 작아집니다.`;
+}
+function drawTheory() {
+  theoryFrame++;
+  if(mode==='generation') { advanceGeneration(); drawGenerationTheory(); }
+  else if(mode==='carriers') drawCarrierTheory();
+  else if(mode==='conductivity') drawConductivityTheory();
+}
+
+// ===================== 루프 (모니터 주사율과 무관한 시간 진행) =====================
+function loop(ts) {
+  if (last === null) last = ts;
+  const frames = Math.min((ts - last) / (1000 / 60), 4); last = ts;
+  if (!paused && ['drift', 'diff', 'both'].includes(mode)) {
+    acc += (+$('SP').value) * frames;
+    let n = Math.min(Math.floor(acc), 200); acc -= Math.floor(acc);
+    const ph = phys(), E = field();
+    for (let i = 0; i < n; i++) step(ph, E);
+  }
+  frame++;
+  if (mode === 'rectify') drawRectifier(ts);
+  else if (SEMI_MODES.includes(mode)) drawSemi();
+  else if (THEORY_MODES.includes(mode)) drawTheory();
+  else draw();
+  requestAnimationFrame(loop);
+}
+setMode('drift');
+requestAnimationFrame(loop);
+</script></body></html>
